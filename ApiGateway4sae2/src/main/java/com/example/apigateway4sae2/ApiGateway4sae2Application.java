@@ -20,7 +20,7 @@ public class ApiGateway4sae2Application {
     public RouteLocator gatewayRoutes(RouteLocatorBuilder builder){
 
         return builder.routes()
-                .route("Condidat", r->r.path("/candidats/**")
+                .route("service-test", r->r.path("/service-test/**")
                         .uri("http://localhost:8089"))
                 .build();
     }
