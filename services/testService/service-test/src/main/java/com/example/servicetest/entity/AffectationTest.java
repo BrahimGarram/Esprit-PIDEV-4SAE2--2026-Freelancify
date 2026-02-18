@@ -40,7 +40,6 @@ public class AffectationTest {
     )
     private Set<QuestionTest> questions = new HashSet<>();
 
-    // Constructor
     public AffectationTest() {
         this.assignedAt = LocalDateTime.now();
         this.status = Status.PENDING;
@@ -48,7 +47,7 @@ public class AffectationTest {
         this.score = 0.0;
     }
 
-    // Helper methods (IMPORTANT pour relation bidirectionnelle)
+    // Helper methods (IMPORTANT)
     public void addQuestion(QuestionTest question) {
         this.questions.add(question);
         question.getAffectations().add(this);
@@ -91,3 +90,4 @@ public class AffectationTest {
 
     public Set<QuestionTest> getQuestions() { return questions; }
 }
+

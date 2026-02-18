@@ -1,5 +1,6 @@
 package com.example.servicetest.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -39,7 +40,8 @@ public class QuestionTest {
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // 🔥 Relation inverse
+    // 🔥 On ignore pour éviter la boucle infinie
+    @JsonIgnore
     @ManyToMany(mappedBy = "questions")
     private Set<AffectationTest> affectations = new HashSet<>();
 
