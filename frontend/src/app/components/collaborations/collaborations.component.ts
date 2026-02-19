@@ -40,10 +40,16 @@ export class CollaborationsComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
   isAdmin = false;
   isFreelancer = false;
+  /** True when user has Enterprise/Company owner role or owns at least one company. Used to show Create Company/Collaboration button. */
+  isEnterprise = false;
   userLoadFailed = false;
   editingCollaboration: Collaboration | null = null;
   /** True when URL is /admin/collaborations — use this to always fetch all collaborations (no status param). */
   isAdminRoute = false;
+  /** Toggle for Enterprise "What you can do" panel. */
+  enterprisePanelOpen = false;
+  /** Enterprise view: 'mine' = my company's collaborations, 'all' = all collaborations in the platform. */
+  enterpriseViewMode: 'mine' | 'all' = 'mine';
 
   searchTerm = '';
   selectedStatus: CollaborationStatus | 'ALL' = 'ALL';
@@ -52,6 +58,7 @@ export class CollaborationsComponent implements OnInit, OnDestroy {
   filterBudgetMin: number | null = null;
   filterBudgetMax: number | null = null;
   filterDuration = '';
+  filterComplexity = '';
   filterIndustry = '';
 
   STATUS_OPTIONS: { value: CollaborationStatus | 'ALL'; label: string }[] = [
@@ -79,7 +86,9 @@ export class CollaborationsComponent implements OnInit, OnDestroy {
     complexityLevel: '',
     deadline: '',
     confidentialityOption: false,
-    industry: ''
+    industry: '',
+    maxFreelancersNeeded: undefined,
+    milestoneStructure: undefined
   };
 
   editCollaboration: UpdateCollaborationRequest = {};
@@ -139,12 +148,50 @@ export class CollaborationsComponent implements OnInit, OnDestroy {
   async checkRoles() {
     try {
       const roles = await this.keycloakService.getUserRoles();
-      this.isAdmin = (roles || []).some((r: string) => String(r).toUpperCase() === 'ADMIN');
-      this.isFreelancer = (roles || []).some((r: string) => String(r).toUpperCase() === 'FREELANCER');
+      const roleList = roles || [];
+      this.isAdmin = roleList.some((r: string) => String(r).toUpperCase() === 'ADMIN');
+      this.isFreelancer = roleList.some((r: string) => {
+        const u = String(r).toUpperCase();
+        return u === 'FREELANCER' || u === 'FREELANCE';
+      });
+      this.isEnterprise = roleList.some((r: string) => {
+        const u = String(r).toUpperCase();
+        return u === 'ENTERPRISE' || u === 'COMPANY_OWNER' || u === 'EMPLOYER' || u.includes('ENTERPRISE') || u.includes('COMPANY');
+      });
     } catch (e) {
       this.isAdmin = false;
       this.isFreelancer = false;
+      this.isEnterprise = false;
     }
+    // Fallback 1: backend user role (user-service). Keycloak may expose client roles or different names.
+    if (this.currentUser?.role) {
+      const r = String(this.currentUser.role).toUpperCase();
+      if (r === 'FREELANCER' || r === 'FREELANCE') this.isFreelancer = true;
+      if (r === 'ADMIN') this.isAdmin = true;
+      if (r === 'ENTERPRISE' || r === 'COMPANY_OWNER' || r === 'EMPLOYER') this.isEnterprise = true;
+    }
+    // Fallback 2: roles stored at login (realm_access.roles from JWT)
+    if (!this.isFreelancer || !this.isAdmin || !this.isEnterprise) {
+      try {
+        const stored = localStorage.getItem('kc-roles');
+        if (stored) {
+          const arr = JSON.parse(stored) as string[];
+          if (Array.isArray(arr)) {
+            if (!this.isFreelancer && arr.some((r: string) => /^freelance(r)?$/i.test(String(r).trim())))
+              this.isFreelancer = true;
+            if (!this.isAdmin && arr.some((r: string) => String(r).toUpperCase() === 'ADMIN'))
+              this.isAdmin = true;
+            if (!this.isEnterprise && arr.some((r: string) => /enterprise|company_owner|employer/i.test(String(r).trim())))
+              this.isEnterprise = true;
+          }
+        }
+      } catch (_) {}
+    }
+  }
+
+  /** True if the user should see the Create Company / New Collaboration button. Only hide for freelancer with no companies. */
+  get canCreateCompanyOrCollaboration(): boolean {
+    return !(this.isFreelancer && this.companies.length === 0);
   }
 
   loadCompanies() {
@@ -193,17 +240,23 @@ export class CollaborationsComponent implements OnInit, OnDestroy {
         next: (list) => { this.collaborations = list; this.applyFilters(); this.isLoading = false; },
         error: () => { this.isLoading = false; this.loadError = true; this.toast.error('Failed to load collaborations'); }
       });
+    } else if (isEnterprise && this.enterpriseViewMode === 'all') {
+      this.collaborationService.getAll({ status }).subscribe({
+        next: (list) => { this.collaborations = list; this.applyFilters(); this.isLoading = false; },
+        error: () => { this.isLoading = false; this.loadError = true; this.toast.error('Failed to load collaborations'); }
+      });
     } else if (isEnterprise && companyId) {
       this.collaborationService.getAll({ companyId, status }).subscribe({
         next: (list) => { this.collaborations = list; this.applyFilters(); this.isLoading = false; },
         error: () => { this.isLoading = false; this.loadError = true; this.toast.error('Failed to load collaborations'); }
       });
     } else {
-      // Freelancer: only OPEN collaborations are browsable; when status is undefined (ALL) use OPEN
-      const filterStatus: CollaborationStatus = !status ? 'OPEN' : status;
-      const hasFilters = !!(this.filterSkills || this.filterBudgetMin != null || this.filterBudgetMax != null || this.filterDuration || this.filterIndustry);
-      const params: any = { status: filterStatus };
-      if (filterStatus === 'OPEN' && hasFilters) {
+      // Freelancer: fetch all collaborations when "All statuses" is selected so backend returns all 4; filter by status in UI.
+      // When user selects a specific status (e.g. Open), send it to backend to reduce payload.
+      const hasFilters = !!(this.filterSkills || this.filterBudgetMin != null || this.filterBudgetMax != null || this.filterDuration || this.filterComplexity || this.filterIndustry);
+      const params: any = {};
+      if (status) params.status = status;
+      if (params.status === 'OPEN' && hasFilters) {
         params.skills = this.filterSkills || undefined;
         params.budgetMin = this.filterBudgetMin ?? undefined;
         params.budgetMax = this.filterBudgetMax ?? undefined;
@@ -246,10 +299,20 @@ export class CollaborationsComponent implements OnInit, OnDestroy {
     if (this.selectedCompanyId && this.isAdmin) {
       list = list.filter(c => c.companyId === this.selectedCompanyId);
     }
+    if (this.filterComplexity && this.filterComplexity.trim()) {
+      const comp = this.filterComplexity.trim().toLowerCase();
+      list = list.filter(c => (c.complexityLevel || '').toLowerCase().includes(comp));
+    }
     this.filteredCollaborations = list;
   }
 
   onFilterChange() {
+    this.loadCollaborations();
+  }
+
+  setEnterpriseViewMode(mode: 'mine' | 'all') {
+    if (this.enterpriseViewMode === mode) return;
+    this.enterpriseViewMode = mode;
     this.loadCollaborations();
   }
 
@@ -267,6 +330,8 @@ export class CollaborationsComponent implements OnInit, OnDestroy {
       next: () => {
         this.toast.success('Company created');
         this.showCreateCompanyModal = false;
+        this.selectedStatus = 'ALL';
+        this.searchTerm = '';
         this.loadCompanies();
       },
       error: (err) => this.toast.error(err.error?.error || err.error?.message || 'Create company failed')
@@ -308,6 +373,8 @@ export class CollaborationsComponent implements OnInit, OnDestroy {
       next: () => {
         this.toast.success('Collaboration created');
         this.showCreateModal = false;
+        this.selectedStatus = 'ALL';
+        this.searchTerm = '';
         this.loadCollaborations();
       },
       error: (err) => this.toast.error(err.error?.error || err.error?.message || 'Create failed')
