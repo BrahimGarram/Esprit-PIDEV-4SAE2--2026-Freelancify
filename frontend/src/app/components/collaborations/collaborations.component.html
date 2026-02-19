@@ -1,0 +1,388 @@
+<div class="page-content">
+  <div class="content-inner">
+    <div class="banner banner-warn" *ngIf="userLoadFailed">
+      <span>Your profile could not be loaded (401). Please <a routerLink="/login">log in again</a> or refresh the page. User-service (port 8081) must be running and accept your token.</span>
+    </div>
+
+    <div class="page-header">
+      <div class="page-header-text">
+        <h1>Collaborations</h1>
+        <p class="page-header-subtitle">Structured projects and applications</p>
+      </div>
+      <button class="btn-primary btn-header-action" (click)="openCreate()">
+        <i class="fas fa-plus"></i> {{ companies.length ? 'New Collaboration' : 'New Company' }}
+      </button>
+    </div>
+
+    <div class="filters-bar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+      </div>
+      <select class="filter-select" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
+        <option *ngFor="let o of STATUS_OPTIONS" [value]="o.value">{{ o.label }}</option>
+      </select>
+      <select class="filter-select" [(ngModel)]="selectedCompanyId" (change)="onFilterChange()" *ngIf="isAdmin || companies.length > 1">
+        <option [ngValue]="null">All companies</option>
+        <option *ngFor="let co of companies" [ngValue]="co.id">{{ co.name }}</option>
+      </select>
+      <span class="admin-hint" *ngIf="isAdminRoute && selectedCompanyId == null && !isLoading">
+        Showing all collaborations from all companies ({{ filteredCollaborations.length }})
+      </span>
+      <ng-container *ngIf="isFreelancer && selectedStatus === 'OPEN'">
+        <input type="text" class="filter-input" placeholder="Skills" [(ngModel)]="filterSkills" (input)="onFilterChange()">
+        <input type="number" class="filter-input" placeholder="Min budget" [(ngModel)]="filterBudgetMin" (change)="onFilterChange()" min="0" step="100">
+        <input type="number" class="filter-input" placeholder="Max budget" [(ngModel)]="filterBudgetMax" (change)="onFilterChange()" min="0" step="100">
+        <input type="text" class="filter-input" placeholder="Duration" [(ngModel)]="filterDuration" (input)="onFilterChange()">
+        <input type="text" class="filter-input" placeholder="Industry" [(ngModel)]="filterIndustry" (input)="onFilterChange()">
+      </ng-container>
+    </div>
+
+    <div class="admin-capabilities" *ngIf="isAdminRoute && !isLoading">
+      <p><strong>Admin:</strong> View all collaborations across companies. Filter by status. Moderate: change status, cancel, complete, freeze, or delete any collaboration. View all applications below to monitor freelancer activity.</p>
+    </div>
+
+    <div *ngIf="isLoading" class="loading">Loading...</div>
+
+    <section class="section-cards" *ngIf="!isLoading && filteredCollaborations.length">
+      <h2 class="section-title">Collaboration listings ({{ filteredCollaborations.length }})</h2>
+      <div class="card-grid">
+        <div class="card" *ngFor="let c of filteredCollaborations">
+          <div class="card-header">
+            <h3 class="card-title">{{ c.title }}</h3>
+            <span class="badge badge-pill" [class]="'status-' + (c.status || 'OPEN').toLowerCase()">{{ c.status }}</span>
+          </div>
+          <p class="card-desc">{{ c.description | slice:0:120 }}{{ (c.description && c.description.length > 120) ? '...' : '' }}</p>
+          <div class="card-meta">
+            <span>{{ formatCurrency(c.budgetMin) }} – {{ formatCurrency(c.budgetMax) }}</span>
+            <span>{{ c.estimatedDuration }}</span>
+            <span *ngIf="!isFreelancer && companies.length">{{ getCompanyName(c.companyId) }}</span>
+          </div>
+          <div class="card-actions">
+            <button class="btn-sm btn-primary" (click)="openDetail(c)">View</button>
+            <button class="btn-sm btn-outline" (click)="openEdit(c)" *ngIf="canManageCollaboration(c) && (c.status === 'OPEN' || c.status === 'ON_HOLD' || isAdmin)">Edit</button>
+            <button class="btn-sm btn-success" (click)="openApplyModal(c)" *ngIf="isFreelancer && c.status === 'OPEN' && !hasApplied(c.id!)">Apply</button>
+            <span class="app-status" *ngIf="hasApplied(c.id!)">{{ getApplicationStatus(c.id!) }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Admin: View ALL applications -->
+    <section class="section-apps section-apps-all" *ngIf="isAdminRoute && !isLoading">
+      <div class="section-header-rich">
+        <span class="section-icon-wrap"><i class="fas fa-inbox"></i></span>
+        <div class="section-header-text">
+          <h2 class="section-title">All applications</h2>
+          <p class="section-subtitle">Review and moderate freelancer applications across collaborations</p>
+        </div>
+        <span class="section-count-pill">{{ allApplications.length }}</span>
+      </div>
+      <p class="section-desc" *ngIf="!allApplicationsLoading && allApplications.length === 0">No applications yet.</p>
+      <div *ngIf="allApplicationsLoading" class="loading-inline">Loading applications...</div>
+      <div class="app-list app-list-rich" *ngIf="!allApplicationsLoading && allApplications.length">
+        <div class="app-card app-card-rich" *ngFor="let app of allApplications" [class.app-card-pending]="app.status === 'PENDING'" [class.app-card-accepted]="app.status === 'ACCEPTED'" [class.app-card-rejected]="app.status === 'REJECTED'">
+          <div class="app-card-accent"></div>
+          <div class="app-card-inner">
+            <div class="app-card-top">
+              <div class="app-card-identity">
+                <span class="app-card-avatar">F{{ app.freelancerId }}</span>
+                <div class="app-card-meta-block">
+                  <span class="app-card-id">Application #{{ app.id }}</span>
+                  <span class="app-card-meta">
+                    <i class="fas fa-briefcase"></i> Collab #{{ app.collaborationId }}
+                    <i class="fas fa-user"></i> Freelancer #{{ app.freelancerId }}
+                  </span>
+                  <span class="app-card-date" *ngIf="app.createdAt"><i class="fas fa-clock"></i> {{ formatDate(app.createdAt) }}</span>
+                </div>
+              </div>
+              <div class="app-card-right">
+                <span class="badge badge-pill status-{{ (app.status || '').toLowerCase() }}">{{ app.status }}</span>
+                <div class="app-card-price-block">
+                  <span class="app-card-price-label">Proposed</span>
+                  <span class="app-card-price">{{ formatCurrency(app.proposedPrice || 0) }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="app-card-proposal" *ngIf="app.proposalMessage">
+              <span class="app-card-proposal-label">Proposal</span>
+              <p class="app-card-desc">"{{ app.proposalMessage | slice:0:160 }}{{ (app.proposalMessage && app.proposalMessage.length > 160) ? '...' : '' }}"</p>
+            </div>
+            <div class="app-card-actions app-card-actions-rich">
+              <button class="btn-sm btn-primary" (click)="openDetailById(app.collaborationId)">
+                <i class="fas fa-external-link-alt"></i> View collaboration
+              </button>
+              <ng-container *ngIf="app.status === 'PENDING' && (isAdmin || isAdminRoute)">
+                <button class="btn-sm btn-success" (click)="acceptApplicationFromList(app)">
+                  <i class="fas fa-check"></i> Accept
+                </button>
+                <button class="btn-sm btn-danger" (click)="rejectApplicationFromList(app)">
+                  <i class="fas fa-times"></i> Reject
+                </button>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- My applications (freelancer) -->
+    <section class="section-apps" *ngIf="isFreelancer && myApplications.length && !isLoading">
+      <h2 class="section-title">My applications</h2>
+      <div class="app-list">
+        <div class="app-card" *ngFor="let app of myApplications">
+          <div class="app-card-main">
+            <div class="app-card-info">
+              <span class="app-card-id">Request #{{ app.id }}</span>
+              <span class="app-card-meta">Collaboration #{{ app.collaborationId }}</span>
+              <p class="app-card-desc" *ngIf="app.proposalMessage">{{ app.proposalMessage | slice:0:80 }}...</p>
+            </div>
+            <div class="app-card-right">
+              <span class="badge badge-pill status-{{ (app.status || '').toLowerCase() }}">{{ app.status }}</span>
+              <span class="app-card-price">{{ formatCurrency(app.proposedPrice || 0) }}</span>
+            </div>
+          </div>
+          <div class="app-card-actions">
+            <button class="btn-sm btn-primary" (click)="openDetailById(app.collaborationId)">View</button>
+            <button class="btn-sm btn-danger" (click)="withdrawApplication(app)" *ngIf="app.status === 'PENDING'">Withdraw</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div *ngIf="!isLoading && !filteredCollaborations.length" class="empty">
+      <p>No collaborations found.</p>
+      <p class="empty-hint" *ngIf="!companies.length">As an <strong>Enterprise</strong> user, create your company first, then you can post collaborations.</p>
+      <button class="btn-primary" (click)="openCreate()">
+        <i class="fas fa-plus"></i> {{ companies.length ? 'New Collaboration' : 'New Company' }}
+      </button>
+      <p class="empty-tip" *ngIf="loadError">Make sure <strong>collaboration-service</strong> is running on port 8083, then refresh the page.</p>
+      <p class="empty-tip" *ngIf="userLoadFailed">To create a company or collaboration, <a routerLink="/login">log in again</a> and ensure <strong>user-service</strong> (port 8081) is running.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Create modal -->
+<div class="modal-overlay" *ngIf="showCreateModal" (click)="showCreateModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h2>Create Collaboration</h2>
+    <div class="form-group">
+      <label>Company</label>
+      <select [(ngModel)]="newCollaboration.companyId">
+        <option *ngFor="let co of companies" [value]="co.id">{{ co.name }}</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" [(ngModel)]="newCollaboration.title" placeholder="Title">
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea [(ngModel)]="newCollaboration.description" rows="4" placeholder="Description"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Type</label>
+        <select [(ngModel)]="newCollaboration.collaborationType">
+          <option value="ONE_TIME">One-time</option>
+          <option value="RECURRING">Recurring</option>
+          <option value="LONG_TERM">Long-term</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Complexity</label>
+        <input type="text" [(ngModel)]="newCollaboration.complexityLevel" placeholder="e.g. Medium">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Required skills (comma-separated)</label>
+      <input type="text" [(ngModel)]="newCollaboration.requiredSkills" placeholder="e.g. Java, React">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Budget min</label>
+        <input type="number" [(ngModel)]="newCollaboration.budgetMin" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Budget max</label>
+        <input type="number" [(ngModel)]="newCollaboration.budgetMax" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Estimated duration</label>
+        <input type="text" [(ngModel)]="newCollaboration.estimatedDuration" placeholder="e.g. 3 months">
+      </div>
+      <div class="form-group">
+        <label>Deadline</label>
+        <input type="datetime-local" [(ngModel)]="newCollaboration.deadline">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Industry (optional)</label>
+      <input type="text" [(ngModel)]="newCollaboration.industry" placeholder="e.g. Technology, Healthcare">
+    </div>
+    <div class="form-group checkbox">
+      <label><input type="checkbox" [(ngModel)]="newCollaboration.confidentialityOption"> NDA / Confidentiality</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" (click)="createCollaboration()">Create</button>
+      <button class="btn-secondary" (click)="showCreateModal = false">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="showEditModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h2>Edit Collaboration</h2>
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" [(ngModel)]="editCollaboration.title" placeholder="Title">
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea [(ngModel)]="editCollaboration.description" rows="4"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Type</label>
+        <select [(ngModel)]="editCollaboration.collaborationType">
+          <option value="ONE_TIME">One-time</option>
+          <option value="RECURRING">Recurring</option>
+          <option value="LONG_TERM">Long-term</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select [(ngModel)]="editCollaboration.status">
+          <option value="OPEN">Open</option>
+          <option value="MATCHED">Matched</option>
+          <option value="IN_PROGRESS">In progress</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="CANCELLED">Cancelled</option>
+          <option value="ON_HOLD">On hold</option>
+          <option value="ARCHIVED">Archived</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Required skills</label>
+      <input type="text" [(ngModel)]="editCollaboration.requiredSkills">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Budget min</label>
+        <input type="number" [(ngModel)]="editCollaboration.budgetMin" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Budget max</label>
+        <input type="number" [(ngModel)]="editCollaboration.budgetMax" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Deadline</label>
+      <input type="datetime-local" [(ngModel)]="editCollaboration.deadline">
+    </div>
+    <div class="form-group">
+      <label>Industry</label>
+      <input type="text" [(ngModel)]="editCollaboration.industry" placeholder="e.g. Technology">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" (click)="saveEdit()">Save</button>
+      <button class="btn-secondary" (click)="showEditModal = false">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail modal -->
+<div class="modal-overlay" *ngIf="showDetailModal && selectedCollaboration" (click)="closeDetail()">
+  <div class="modal modal-lg modal-detail" (click)="$event.stopPropagation()">
+    <div class="modal-detail-body">
+    <div class="modal-detail-header">
+      <h2 class="modal-detail-title">{{ selectedCollaboration.title }}</h2>
+      <span class="badge badge-pill" [class]="'status-' + (selectedCollaboration.status || '').toLowerCase()">{{ selectedCollaboration.status }}</span>
+    </div>
+    <p class="detail-desc">{{ selectedCollaboration.description }}</p>
+    <div class="detail-grid">
+      <div class="detail-grid-item"><span class="detail-label">Company</span><span class="detail-value">{{ getCompanyName(selectedCollaboration.companyId) }}</span></div>
+      <div class="detail-grid-item"><span class="detail-label">Type</span><span class="detail-value">{{ selectedCollaboration.collaborationType }}</span></div>
+      <div class="detail-grid-item"><span class="detail-label">Budget</span><span class="detail-value">{{ formatCurrency(selectedCollaboration.budgetMin) }} – {{ formatCurrency(selectedCollaboration.budgetMax) }}</span></div>
+      <div class="detail-grid-item"><span class="detail-label">Duration</span><span class="detail-value">{{ selectedCollaboration.estimatedDuration }}</span></div>
+      <div class="detail-grid-item"><span class="detail-label">Complexity</span><span class="detail-value">{{ selectedCollaboration.complexityLevel }}</span></div>
+      <div class="detail-grid-item"><span class="detail-label">Deadline</span><span class="detail-value">{{ formatDate(selectedCollaboration.deadline) }}</span></div>
+      <div class="detail-grid-item detail-grid-full"><span class="detail-label">Skills</span><span class="detail-value">{{ selectedCollaboration.requiredSkills }}</span></div>
+      <div class="detail-grid-item"><span class="detail-label">Industry</span><span class="detail-value">{{ selectedCollaboration.industry || '-' }}</span></div>
+      <div class="detail-grid-item"><span class="detail-label">NDA</span><span class="detail-value">{{ selectedCollaboration.confidentialityOption ? 'Yes' : 'No' }}</span></div>
+    </div>
+    <div class="detail-actions-wrap" *ngIf="canManageCollaboration(selectedCollaboration) || isAdminRoute">
+      <p class="detail-actions-label" *ngIf="isAdmin || isAdminRoute">Admin: cancel, complete, freeze, archive, or delete this collaboration.</p>
+      <div class="detail-actions">
+        <button class="btn-primary" (click)="openEdit(selectedCollaboration); showDetailModal = false">Edit</button>
+        <ng-container *ngIf="isAdmin || isAdminRoute">
+          <button class="btn-secondary" (click)="setCollaborationStatus(selectedCollaboration, 'CANCELLED')" *ngIf="selectedCollaboration.status !== 'CANCELLED' && selectedCollaboration.status !== 'ARCHIVED'">Cancel</button>
+          <button class="btn-secondary" (click)="setCollaborationStatus(selectedCollaboration, 'COMPLETED')" *ngIf="selectedCollaboration.status !== 'COMPLETED' && selectedCollaboration.status !== 'ARCHIVED'">Mark completed</button>
+          <button class="btn-secondary" (click)="setCollaborationStatus(selectedCollaboration, 'ON_HOLD')" *ngIf="selectedCollaboration.status !== 'ON_HOLD' && selectedCollaboration.status !== 'ARCHIVED'">Freeze</button>
+          <button class="btn-secondary" (click)="archiveCollaboration(selectedCollaboration)" *ngIf="selectedCollaboration.status !== 'ARCHIVED'">Archive</button>
+          <button class="btn-danger" (click)="deleteCollaboration(selectedCollaboration)">Delete</button>
+        </ng-container>
+        <ng-container *ngIf="!isAdmin && !isAdminRoute">
+          <button class="btn-secondary" (click)="archiveCollaboration(selectedCollaboration)" *ngIf="selectedCollaboration.status !== 'ARCHIVED'">Archive</button>
+          <button class="btn-danger" (click)="deleteCollaboration(selectedCollaboration)" *ngIf="selectedCollaboration.status === 'OPEN'">Delete</button>
+        </ng-container>
+      </div>
+    </div>
+    <div class="applications" *ngIf="(canManageCollaboration(selectedCollaboration) || isAdminRoute) && applications.length">
+      <h3 class="applications-title">Applications</h3>
+      <div class="app-list">
+        <div class="app-item" *ngFor="let app of applications">
+          <div class="app-item-row">Freelancer #{{ app.freelancerId }} – {{ app.proposalMessage | slice:0:100 }}{{ (app.proposalMessage?.length || 0) > 100 ? '...' : '' }}</div>
+          <div class="app-item-row"><span class="app-item-price">{{ formatCurrency(app.proposedPrice || 0) }}</span> – <span class="badge badge-pill status-{{ (app.status || '').toLowerCase() }}">{{ app.status }}</span></div>
+          <div *ngIf="app.status === 'PENDING'" class="app-item-actions">
+            <button class="btn-sm btn-success" (click)="acceptApplication(app)">Accept</button>
+            <button class="btn-sm btn-danger" (click)="rejectApplication(app)">Reject</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div class="modal-detail-footer">
+      <button class="btn-ghost" (click)="closeDetail()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create company modal -->
+<div class="modal-overlay" *ngIf="showCreateCompanyModal" (click)="showCreateCompanyModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h2>Create Company</h2>
+    <p class="text-muted">Create a company to post collaborations as an enterprise.</p>
+    <div class="form-group">
+      <label>Company name</label>
+      <input type="text" [(ngModel)]="newCompanyName" placeholder="Company name">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" (click)="createCompany()">Create</button>
+      <button class="btn-secondary" (click)="showCreateCompanyModal = false">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Apply modal -->
+<div class="modal-overlay" *ngIf="showApplyModal && selectedCollaboration" (click)="showApplyModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h2>Apply to {{ selectedCollaboration.title }}</h2>
+    <div class="form-group">
+      <label>Proposal message</label>
+      <textarea [(ngModel)]="applyForm.proposalMessage" rows="4" placeholder="Your proposal..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Proposed price</label>
+      <input type="number" [(ngModel)]="applyForm.proposedPrice" min="0" step="0.01">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" (click)="submitApplication()">Submit</button>
+      <button class="btn-secondary" (click)="showApplyModal = false">Cancel</button>
+    </div>
+  </div>
+</div>

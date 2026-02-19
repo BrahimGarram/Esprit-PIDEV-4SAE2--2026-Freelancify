@@ -1,0 +1,59 @@
+<!-- Top Bar -->
+<div class="top-bar">
+  <p>Find the Best Instant Services Marketplace</p>
+</div>
+
+<nav class="navbar" [class.scrolled]="isScrolled">
+  <div class="container">
+    <div class="nav-brand">
+      <a (click)="navigateTo('/')" style="cursor: pointer;">
+        <img src="assets/new/logo.png" alt="Freelancify" class="brand-logo" onerror="this.src='assets/logo.png'">
+        <span class="brand-text">Freelancify</span>
+      </a>
+    </div>
+    <ul class="nav-menu" [class.active]="isMobileMenuOpen">
+      <li><a (click)="navigateTo('/')" class="active" style="cursor: pointer;">Home <i class="fas fa-chevron-down"></i></a></li>
+      <li class="dropdown" (mouseenter)="showServicesDropdown = true" (mouseleave)="showServicesDropdown = false">
+        <a (click)="toggleServicesDropdown(); $event.preventDefault()" style="cursor: pointer;">
+          Services <i class="fas fa-chevron-down"></i>
+        </a>
+        <ul class="dropdown-menu" [class.show]="showServicesDropdown">
+          <li><a (click)="navigateTo('/test'); closeServicesDropdown()" style="cursor: pointer;"><i class="fas fa-flask"></i> Test</a></li>
+          <li><a (click)="navigateTo('/collaborations'); closeServicesDropdown()" style="cursor: pointer;"><i class="fas fa-users"></i> Collaborations</a></li>
+          <li><a (click)="navigateTo('/projet'); closeServicesDropdown()" style="cursor: pointer;"><i class="fas fa-briefcase"></i> Projet</a></li>
+          <li><a (click)="navigateTo('/reclamation'); closeServicesDropdown()" style="cursor: pointer;"><i class="fas fa-exclamation-triangle"></i> Réclamation</a></li>
+          <li><a (click)="navigateTo('/contract'); closeServicesDropdown()" style="cursor: pointer;"><i class="fas fa-file-contract"></i> Contract</a></li>
+        </ul>
+      </li>
+      <li><a (click)="scrollToSection('about'); $event.preventDefault()" style="cursor: pointer;">Pages <i class="fas fa-chevron-down"></i></a></li>
+      <li><a (click)="scrollToSection('portfolio'); $event.preventDefault()" style="cursor: pointer;">Blog <i class="fas fa-chevron-down"></i></a></li>
+      <li *ngIf="isAuthenticated"><a (click)="navigateTo('/browse-users')" style="cursor: pointer;"><i class="fas fa-users"></i> Browse Users</a></li>
+      <li *ngIf="isAuthenticated"><a (click)="navigateTo('/messages')" style="cursor: pointer;"><i class="fas fa-envelope"></i> Messages</a></li>
+      <li *ngIf="isAuthenticated"><a (click)="navigateTo('/projects')" style="cursor: pointer; font-weight: 600; color: #FF6B35;"><i class="fas fa-briefcase"></i> <strong>PROJECTS</strong></a></li>
+      <li *ngIf="isAuthenticated"><a (click)="navigateTo('/profile')" style="cursor: pointer;">Profile <i class="fas fa-chevron-down"></i></a></li>
+      <li *ngIf="isAuthenticated && isAdmin"><a (click)="navigateTo('/admin/users')" style="cursor: pointer;">Manage Users <i class="fas fa-chevron-down"></i></a></li>
+      <li><a (click)="scrollToSection('contact'); $event.preventDefault()" style="cursor: pointer;">Contact <i class="fas fa-chevron-down"></i></a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="icon-btn"><i class="fas fa-flag"></i></button>
+      <button class="icon-btn"><i class="fas fa-sun"></i></button>
+      <a *ngIf="!isAuthenticated" (click)="navigateTo('/login')" class="btn-signin" style="cursor: pointer;">
+        <i class="fas fa-user"></i> Sign In
+      </a>
+      <a *ngIf="!isAuthenticated" (click)="navigateTo('/signup')" class="btn-signup" style="cursor: pointer;">
+        <i class="fas fa-user-plus"></i> Sign Up
+      </a>
+      <a *ngIf="isAuthenticated" (click)="navigateTo('/profile')" class="btn-signin" style="cursor: pointer;">
+        <i class="fas fa-user-circle"></i> {{ username || 'Profile' }}
+      </a>
+      <a *ngIf="isAuthenticated" (click)="logout()" class="btn-signup" style="cursor: pointer;">
+        Logout
+      </a>
+    </div>
+    <div class="nav-toggle" (click)="toggleMobileMenu()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+</nav>
