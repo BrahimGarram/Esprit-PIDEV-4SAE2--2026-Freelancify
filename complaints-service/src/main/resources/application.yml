@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: freelance-platform-spring-app
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/freelancify-local?createDatabaseIfNotExist=true
+    username: root
+    password: ""
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+
+  web:
+    cors:
+      allowed-origins: "http://localhost:4200,http://localhost:8080"
+      allowed-methods: "GET,POST,PUT,DELETE,OPTIONS"
+      allowed-headers: "*"
+      allow-credentials: true
+
+server:
+  port: 8089
+  servlet:
+    context-path: /freelancity
+
+app:
+  frontend:
+    url: http://localhost:4200
+  base:
+    url: http://localhost:8089
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    com.freelance: DEBUG
+
