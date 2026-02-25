@@ -87,8 +87,15 @@ public class GlobalExceptionHandler {
         if (message != null && (message.contains("409") || message.contains("User exists with same username") || message.contains("User exists with same email"))) {
             message = "Username or email already exists. Please use different credentials.";
             status = HttpStatus.CONFLICT;
-        } else if (message != null && (message.contains("Keycloak") && (message.contains("404") || message.contains("admin access token")))) {
-            message = "Keycloak is unavailable. Ensure Keycloak is running on port 8080 and no other application is using that port.";
+        } else if (message != null && message.contains("Keycloak") && (message.contains("404") || message.contains("admin access token"))) {
+            // Keep explicit message from KeycloakService when another app is on port 8080
+            if (!message.contains("Another application") && !message.contains("Port 8080 returned 404 with an HTML")) {
+                if (message.contains("register") || message.contains("create user") || message.contains("realms/")) {
+                    message = "Realm 'projetpidev' not found in Keycloak. Create it in Keycloak Admin Console (see docs/KEYCLOAK_SETUP.md).";
+                } else {
+                    message = "Keycloak is unavailable. Ensure Keycloak is running on port 8080 and no other application is using that port.";
+                }
+            }
         } else if (message != null && message.contains("Could not find role")) {
             message = "Registration configuration error (realm role missing). Please try again or contact support.";
         } else if (message != null && message.contains(":")) {

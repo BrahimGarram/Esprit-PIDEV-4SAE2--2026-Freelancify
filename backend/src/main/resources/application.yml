@@ -28,8 +28,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/projetpidev
-          jwk-set-uri: http://localhost:8080/realms/projetpidev/protocol/openid-connect/certs
+          issuer-uri: http://localhost:9090/realms/projetpidev
+          jwk-set-uri: http://localhost:9090/realms/projetpidev/protocol/openid-connect/certs
   
   # Email Configuration (for password reset)
   mail:
@@ -54,7 +54,7 @@ server:
 # Keycloak Admin Configuration (for user registration)
 keycloak:
   admin:
-    url: http://127.0.0.1:8080
+    url: http://localhost:9090
     username: admin
     password: admin
     realm: projetpidev

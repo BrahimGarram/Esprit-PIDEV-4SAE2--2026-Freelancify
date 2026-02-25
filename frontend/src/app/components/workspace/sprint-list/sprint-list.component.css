@@ -1,0 +1,9 @@
+/* Animations */
+.hover\:shadow-md {
+  transition: box-shadow 0.2s ease;
+}
+
+/* Progress bar animation */
+.bg-green-600 {
+  transition: width 0.3s ease;
+}

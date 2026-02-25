@@ -17,7 +17,7 @@ export interface CreateCompanyRequest {
 
 @Injectable({ providedIn: 'root' })
 export class CompanyService {
-  private apiUrl = 'http://localhost:8083/api/companies';
+  private apiUrl = 'http://localhost:8082/api/companies';
 
   constructor(private http: HttpClient) {}
 

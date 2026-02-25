@@ -20,7 +20,7 @@ export class LoginComponent implements OnInit {
     rememberMe: false
   };
 
-  private keycloakUrl = 'http://localhost:8080';
+  private keycloakUrl = 'http://localhost:9090';
   private realm = 'projetpidev';
   private clientId = 'freelance-client';
 

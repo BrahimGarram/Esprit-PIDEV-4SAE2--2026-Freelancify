@@ -29,7 +29,7 @@ export interface UpdateProposalDto {
 
 @Injectable({ providedIn: 'root' })
 export class CollaborationRequestService {
-  private apiUrl = 'http://localhost:8083/api/collaboration-requests';
+  private apiUrl = 'http://localhost:8082/api/collaboration-requests';
 
   constructor(private http: HttpClient) {}
 

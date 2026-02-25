@@ -1,0 +1,114 @@
+<div class="kanban-board-container p-6">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">Kanban Board</h2>
+    <button 
+      (click)="openCreateModal()"
+      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      New Task
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center h-64">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+
+  <!-- Kanban Columns -->
+  <div *ngIf="!loading" class="grid grid-cols-5 gap-4">
+    <div *ngFor="let column of columns" 
+         class="kanban-column rounded-lg p-4 min-h-[600px]"
+         [ngClass]="getColumnColor(column.id)">
+      
+      <!-- Column Header -->
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-semibold text-gray-700">{{ column.title }}</h3>
+        <span class="bg-white px-2 py-1 rounded-full text-sm text-gray-600">
+          {{ column.tasks.length }}
+        </span>
+      </div>
+
+      <!-- Task List -->
+      <div 
+        cdkDropList
+        [cdkDropListData]="column.tasks"
+        [cdkDropListConnectedTo]="getConnectedLists()"
+        (cdkDropListDropped)="drop($event, column.id)"
+        class="task-list min-h-[500px]">
+        
+        <div 
+          *ngFor="let task of column.tasks"
+          cdkDrag
+          (click)="openTaskDetails(task)"
+          class="task-card bg-white rounded-lg p-4 mb-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200">
+          
+          <!-- Priority Badge -->
+          <div class="flex justify-between items-start mb-2">
+            <span 
+              class="text-xs px-2 py-1 rounded-full font-medium"
+              [ngClass]="getPriorityColor(task.priority)">
+              {{ task.priority }}
+            </span>
+            <span *ngIf="task.commentCount && task.commentCount > 0" 
+                  class="text-xs text-gray-500 flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+              {{ task.commentCount }}
+            </span>
+          </div>
+
+          <!-- Task Title -->
+          <h4 class="font-medium text-gray-800 mb-2 line-clamp-2">{{ task.title }}</h4>
+
+          <!-- Task Meta -->
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span *ngIf="task.estimatedHours" class="flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              {{ task.estimatedHours }}h
+            </span>
+            <span *ngIf="task.deadline" 
+                  class="flex items-center gap-1"
+                  [ngClass]="{'text-red-600': isOverdue(task.deadline)}">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              {{ task.deadline | date:'MMM d' }}
+            </span>
+          </div>
+
+          <!-- Milestone Badge -->
+          <div *ngIf="task.milestoneName" class="mt-2">
+            <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
+              {{ task.milestoneName }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Task Details Modal -->
+<app-task-details-modal
+  *ngIf="showTaskModal && selectedTask"
+  [task]="selectedTask"
+  (close)="closeTaskModal()"
+  (taskUpdated)="onTaskUpdated()">
+</app-task-details-modal>
+
+<!-- Create Task Modal -->
+<app-create-task-modal
+  *ngIf="showCreateModal"
+  [collaborationId]="collaborationId"
+  (close)="closeCreateModal()"
+  (taskCreated)="onTaskCreated()">
+</app-create-task-modal>

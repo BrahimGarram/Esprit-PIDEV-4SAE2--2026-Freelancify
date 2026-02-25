@@ -15,6 +15,7 @@ import { PublicProfileComponent } from './components/public-profile/public-profi
 import { BrowseUsersComponent } from './components/browse-users/browse-users.component';
 import { MessagingComponent } from './components/messaging/messaging.component';
 import { CollaborationsComponent } from './components/collaborations/collaborations.component';
+import { WorkspaceContainerComponent } from './components/workspace/workspace-container/workspace-container.component';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 
@@ -34,6 +35,7 @@ const routes: Routes = [
   { path: 'user/username/:username', component: PublicProfileComponent, canActivate: [AuthGuard] },
   { path: 'projects', component: ProjectsComponent, canActivate: [AuthGuard] },
   { path: 'collaborations', component: CollaborationsComponent, canActivate: [AuthGuard] },
+  { path: 'workspace/:id', component: WorkspaceContainerComponent, canActivate: [AuthGuard] },
   
   // Admin routes
   { path: 'admin/dashboard', component: DashboardComponent, canActivate: [AdminGuard] },

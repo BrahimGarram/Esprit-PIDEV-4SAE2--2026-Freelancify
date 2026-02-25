@@ -594,6 +594,38 @@ export class CollaborationsComponent implements OnInit, OnDestroy {
     return this.companies.find(c => c.id === companyId)?.name || `Company #${companyId}`;
   }
 
+  /** Collaboration title for display (e.g. in My applications). Resolves from loaded collaborations when available. */
+  getCollaborationTitle(collabId: number): string {
+    const c = this.collaborations.find(x => x.id === collabId);
+    return c?.title || `Collaboration #${collabId}`;
+  }
+
+  /** Role context label for the current user (for UI badge). */
+  get roleContextLabel(): string {
+    if (this.isAdminRoute) return 'Moderation (Admin)';
+    if (this.isFreelancer) return 'Freelancer';
+    if (this.companies.length) return 'Enterprise';
+    return 'Projects';
+  }
+
+  /** Enterprise: counts by status when viewing "My collaborations". */
+  get enterpriseMyStats(): { open: number; matched: number; in_progress: number; completed: number; other: number } | null {
+    if (this.isFreelancer || this.enterpriseViewMode !== 'mine') return null;
+    const list = this.collaborations;
+    return {
+      open: list.filter(c => c.status === 'OPEN').length,
+      matched: list.filter(c => c.status === 'MATCHED').length,
+      in_progress: list.filter(c => c.status === 'IN_PROGRESS').length,
+      completed: list.filter(c => c.status === 'COMPLETED').length,
+      other: list.filter(c => !['OPEN', 'MATCHED', 'IN_PROGRESS', 'COMPLETED'].includes(c.status || '')).length
+    };
+  }
+
+  /** Admin: pending applications count. */
+  get adminPendingCount(): number {
+    return this.allApplications.filter(a => a.status === 'PENDING').length;
+  }
+
   /** Resolve company ID for an application (from loaded collaborations). Used for accept/reject from list. */
   getCompanyIdForApplication(app: CollaborationRequestDto): number | null {
     const c = this.collaborations.find(x => x.id === app.collaborationId);
@@ -630,5 +662,12 @@ export class CollaborationsComponent implements OnInit, OnDestroy {
       },
       error: (err) => this.toast.error(err.error?.error || 'Reject failed')
     });
+  }
+
+  /**
+   * Navigate to the workspace/project management view for a collaboration
+   */
+  openWorkspace(collaborationId: number): void {
+    this.router.navigate(['/workspace', collaborationId]);
   }
 }

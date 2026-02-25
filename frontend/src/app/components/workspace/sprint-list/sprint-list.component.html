@@ -1,0 +1,175 @@
+<div class="p-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-semibold text-gray-800">Sprints</h2>
+    <button
+      (click)="openCreateForm()"
+      class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+    >
+      + New Sprint
+    </button>
+  </div>
+
+  <!-- Create Form -->
+  <div *ngIf="showCreateForm" class="bg-white border rounded-lg p-6 mb-6 shadow-sm">
+    <h3 class="text-lg font-semibold mb-4">Create Sprint</h3>
+    <form [formGroup]="sprintForm" (ngSubmit)="onSubmit()" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Sprint Name *</label>
+        <input
+          type="text"
+          formControlName="name"
+          class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          placeholder="e.g., Sprint 1"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Sprint Goal</label>
+        <textarea
+          formControlName="goal"
+          rows="2"
+          class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          placeholder="What do you want to achieve in this sprint?"
+        ></textarea>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
+          <input
+            type="date"
+            formControlName="startDate"
+            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">End Date *</label>
+          <input
+            type="date"
+            formControlName="endDate"
+            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Duration (weeks) *</label>
+          <input
+            type="number"
+            formControlName="durationWeeks"
+            min="1"
+            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-3">
+        <button
+          type="button"
+          (click)="cancelForm()"
+          class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          [disabled]="sprintForm.invalid"
+        >
+          Create Sprint
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Sprints List -->
+  <div *ngIf="loading" class="text-center py-8">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+  </div>
+
+  <div *ngIf="!loading && sprints.length === 0" class="text-center py-12 text-gray-500">
+    No sprints yet. Create your first sprint to start planning.
+  </div>
+
+  <div class="grid gap-4">
+    <div
+      *ngFor="let sprint of sprints"
+      class="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow"
+    >
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <div class="flex items-center space-x-3 mb-2">
+            <h3 class="text-lg font-semibold text-gray-800">{{ sprint.name }}</h3>
+            <span [class]="'px-2 py-1 rounded-full text-xs font-medium ' + getStatusColor(sprint.status)">
+              {{ sprint.status }}
+            </span>
+          </div>
+
+          <p *ngIf="sprint.goal" class="text-gray-600 mb-3">
+            <span class="font-medium">Goal:</span> {{ sprint.goal }}
+          </p>
+
+          <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-3">
+            <div>
+              <span class="font-medium">Start:</span> {{ sprint.startDate | date }}
+            </div>
+            <div>
+              <span class="font-medium">End:</span> {{ sprint.endDate | date }}
+            </div>
+            <div>
+              <span class="font-medium">Duration:</span> {{ sprint.durationWeeks }} weeks
+            </div>
+            <div *ngIf="sprint.status === 'ACTIVE'">
+              <span class="font-medium">Days Remaining:</span> {{ getDaysRemaining(sprint.endDate) }}
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="flex items-center space-x-6 text-sm text-gray-500">
+            <div *ngIf="sprint.totalTasks">
+              <span class="font-medium">Tasks:</span> {{ sprint.completedTasks }}/{{ sprint.totalTasks }}
+            </div>
+            <div *ngIf="sprint.progressPercentage !== undefined">
+              <span class="font-medium">Progress:</span> {{ sprint.progressPercentage }}%
+            </div>
+            <div *ngIf="sprint.totalEstimatedHours">
+              <span class="font-medium">Est. Hours:</span> {{ sprint.totalEstimatedHours }}h
+            </div>
+            <div *ngIf="sprint.totalActualHours">
+              <span class="font-medium">Actual Hours:</span> {{ sprint.totalActualHours }}h
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div *ngIf="sprint.progressPercentage !== undefined" class="mt-3">
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div
+                class="bg-green-600 h-2 rounded-full transition-all"
+                [style.width.%]="sprint.progressPercentage"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex space-x-2 ml-4">
+          <button
+            *ngIf="sprint.status === 'PLANNED'"
+            (click)="startSprint(sprint)"
+            class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+          >
+            Start
+          </button>
+          <button
+            *ngIf="sprint.status === 'ACTIVE'"
+            (click)="completeSprint(sprint)"
+            class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+          >
+            Complete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -65,7 +65,7 @@ export interface UpdateCollaborationRequest {
 
 @Injectable({ providedIn: 'root' })
 export class CollaborationService {
-  private apiUrl = 'http://localhost:8083/api/collaborations';
+  private apiUrl = 'http://localhost:8082/api/collaborations';
 
   constructor(private http: HttpClient) {}
 

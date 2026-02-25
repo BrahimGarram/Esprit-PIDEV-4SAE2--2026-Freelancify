@@ -50,7 +50,7 @@ export class AuthInterceptor implements HttpInterceptor {
     
     try {
       // Get Keycloak config from environment or hardcoded
-      const keycloakUrl = 'http://localhost:8080';
+      const keycloakUrl = 'http://localhost:9090';
       const realm = 'projetpidev';
       const clientId = 'freelance-client'; // Match the clientId from app.module.ts
       

@@ -17,16 +17,31 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
 
+  # Flyway Configuration
+  flyway:
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    enabled: true
+
+  # OAuth2 Resource Server Configuration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9090/realms/projetpidev
+          jwk-set-uri: http://localhost:9090/realms/projetpidev/protocol/openid-connect/certs
+
 server:
-  port: 8083
+  port: 8082  # Fixed: Was 8083, should be 8082
 
 app:
   frontend:
     url: http://localhost:4200
   base:
-    url: http://localhost:8083
+    url: http://localhost:8082  # Fixed: Updated to match port
 
 logging:
   level:
     org.hibernate.SQL: DEBUG
     com.freelance: DEBUG
+    org.flywaydb: INFO

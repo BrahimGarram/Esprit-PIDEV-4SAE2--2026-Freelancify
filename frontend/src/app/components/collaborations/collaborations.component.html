@@ -6,16 +6,19 @@
 
     <div class="page-header">
       <div class="page-header-text">
+        <span class="role-context-badge" [class.role-admin]="isAdminRoute" [class.role-enterprise]="!isFreelancer && companies.length" [class.role-freelancer]="isFreelancer">{{ roleContextLabel }}</span>
         <h1>Collaborations</h1>
-        <p class="page-header-subtitle">{{ isFreelancer ? 'Browse open projects and apply with your proposal' : 'Structured projects and applications' }}</p>
+        <p class="page-header-subtitle" *ngIf="isFreelancer">Find open projects that match your skills. Filter by budget and duration, then apply with your proposal.</p>
+        <p class="page-header-subtitle" *ngIf="!isFreelancer && isAdminRoute">Monitor and moderate all collaborations and applications across the platform.</p>
+        <p class="page-header-subtitle" *ngIf="!isFreelancer && !isAdminRoute">Post projects, manage freelancer applications, and track progress from one place.</p>
       </div>
       <button class="btn-primary btn-header-action" (click)="openCreate()" *ngIf="canCreateCompanyOrCollaboration">
         <i class="fas fa-plus"></i> {{ companies.length ? 'New Collaboration' : 'New Company' }}
       </button>
     </div>
 
-    <!-- Enterprise role summary (project owner / collaboration initiator) -->
-    <div class="enterprise-panel" *ngIf="!isFreelancer && !isLoading">
+    <!-- Enterprise role summary (project owner / collaboration initiator); hidden on Admin route -->
+    <div class="enterprise-panel" *ngIf="!isFreelancer && !isAdminRoute && !isLoading">
       <div class="enterprise-panel-head">
         <button type="button" class="enterprise-panel-toggle" (click)="enterprisePanelOpen = !enterprisePanelOpen" [attr.aria-expanded]="enterprisePanelOpen">
           <i class="fas" [class.fa-chevron-down]="!enterprisePanelOpen" [class.fa-chevron-up]="enterprisePanelOpen"></i>
@@ -61,26 +64,53 @@
     </div>
 
     <div class="admin-capabilities" *ngIf="isAdminRoute && !isLoading">
-      <p><strong>Admin:</strong> View all collaborations across companies. Filter by status. Moderate: change status, cancel, complete, freeze, or delete any collaboration. View all applications below to monitor freelancer activity.</p>
+      <div class="admin-stats-row">
+        <span class="admin-stat"><i class="fas fa-briefcase"></i> {{ collaborations.length }} collaborations</span>
+        <span class="admin-stat"><i class="fas fa-inbox"></i> {{ allApplications.length }} applications</span>
+        <span class="admin-stat admin-stat-pending" *ngIf="adminPendingCount"><i class="fas fa-clock"></i> {{ adminPendingCount }} pending</span>
+      </div>
+      <p><strong>Moderation:</strong> Filter by company and status. Change status, cancel, complete, or delete collaborations. Accept or reject applications below. Use the detail view on any collaboration to manage its applications.</p>
+    </div>
+
+    <!-- Enterprise: quick stats when viewing "My collaborations" -->
+    <div class="role-stats enterprise-stats" *ngIf="enterpriseMyStats && !isLoading">
+      <span class="stat-item"><i class="fas fa-folder-open"></i> {{ enterpriseMyStats.open }} Open</span>
+      <span class="stat-item"><i class="fas fa-handshake"></i> {{ enterpriseMyStats.matched }} Matched</span>
+      <span class="stat-item"><i class="fas fa-spinner"></i> {{ enterpriseMyStats.in_progress }} In progress</span>
+      <span class="stat-item"><i class="fas fa-check-circle"></i> {{ enterpriseMyStats.completed }} Completed</span>
+      <span class="stat-item" *ngIf="enterpriseMyStats.other"><i class="fas fa-ellipsis-h"></i> {{ enterpriseMyStats.other }} Other</span>
     </div>
 
     <!-- Enterprise: switch between My collaborations and All in platform -->
-    <div class="view-switcher-enterprise" *ngIf="!isFreelancer && companies.length && !isLoading">
-      <span class="view-switcher-label">View:</span>
-      <div class="view-switcher-btns">
-        <button type="button" class="view-switcher-btn" [class.active]="enterpriseViewMode === 'mine'" (click)="setEnterpriseViewMode('mine')">
-          My collaborations
-        </button>
-        <button type="button" class="view-switcher-btn" [class.active]="enterpriseViewMode === 'all'" (click)="setEnterpriseViewMode('all')">
-          All in platform
-        </button>
+    <div class="view-switcher-enterprise-wrap" *ngIf="!isFreelancer && companies.length && !isLoading">
+      <div class="view-switcher-enterprise">
+        <span class="view-switcher-label">View:</span>
+        <div class="view-switcher-btns">
+          <button type="button" class="view-switcher-btn" [class.active]="enterpriseViewMode === 'mine'" (click)="setEnterpriseViewMode('mine')">
+            My collaborations
+          </button>
+          <button type="button" class="view-switcher-btn" [class.active]="enterpriseViewMode === 'all'" (click)="setEnterpriseViewMode('all')">
+            All in platform
+          </button>
+        </div>
       </div>
+      <p class="view-switcher-hint" *ngIf="enterpriseViewMode === 'all'">Browsing all projects on the platform. You can only edit or manage applications for collaborations that belong to your company.</p>
+    </div>
+
+    <!-- Freelancer: short tip panel -->
+    <div class="freelancer-tip-panel" *ngIf="isFreelancer && !isLoading">
+      <i class="fas fa-lightbulb"></i>
+      <span>Use filters above to find projects by skills, budget, and duration. Only <strong>Open</strong> projects accept applications — apply with a clear proposal and your proposed price.</span>
     </div>
 
     <div *ngIf="isLoading" class="loading">Loading...</div>
 
     <section class="section-cards section-spaced" *ngIf="!isLoading && filteredCollaborations.length">
-      <h2 class="section-title section-title-main">{{ enterpriseViewMode === 'all' && !isFreelancer ? 'All collaborations (' + filteredCollaborations.length + ')' : 'Collaboration listings (' + filteredCollaborations.length + ')' }}</h2>
+      <h2 class="section-title section-title-main">
+        <ng-container *ngIf="isFreelancer && selectedStatus === 'OPEN'">{{ filteredCollaborations.length }} open {{ filteredCollaborations.length === 1 ? 'project' : 'projects' }} — apply now</ng-container>
+        <ng-container *ngIf="isFreelancer && selectedStatus !== 'OPEN'">Collaboration listings ({{ filteredCollaborations.length }})</ng-container>
+        <ng-container *ngIf="!isFreelancer">{{ enterpriseViewMode === 'all' ? 'All collaborations (' + filteredCollaborations.length + ')' : 'My collaborations (' + filteredCollaborations.length + ')' }}</ng-container>
+      </h2>
       <div class="card-grid card-grid-equal">
         <div class="card card-premium" *ngFor="let c of filteredCollaborations">
           <div class="card-header">
@@ -97,6 +127,9 @@
             <button class="btn-sm btn-primary btn-cta" (click)="openDetail(c)">View</button>
             <button class="btn-sm btn-outline" (click)="openEdit(c)" *ngIf="canManageCollaboration(c) && (c.status === 'OPEN' || c.status === 'ON_HOLD' || isAdmin)">Edit</button>
             <button class="btn-sm btn-success" (click)="openApplyModal(c)" *ngIf="isFreelancer && c.status === 'OPEN' && !hasApplied(c.id!)">Apply</button>
+            <button class="btn-sm btn-info" (click)="openWorkspace(c.id!)" *ngIf="c.status === 'IN_PROGRESS' || c.status === 'MATCHED'" title="Open Project Workspace">
+              <i class="fas fa-tasks"></i> Workspace
+            </button>
             <span class="app-status" *ngIf="hasApplied(c.id!)">{{ getApplicationStatus(c.id!) }}</span>
           </div>
         </div>
@@ -163,14 +196,14 @@
 
     <!-- My applications (freelancer) -->
     <section class="section-apps section-apps-my section-spaced" *ngIf="isFreelancer && myApplications.length && !isLoading">
-      <h2 class="section-title section-title-main">My applications</h2>
+      <h2 class="section-title section-title-main">My applications ({{ myApplications.length }})</h2>
       <div class="app-list app-list-horizontal">
         <div class="app-card app-card-my" *ngFor="let app of myApplications">
           <div class="app-card-main app-card-main-horizontal">
             <div class="app-card-info">
-              <span class="app-card-id">Request #{{ app.id }}</span>
-              <span class="app-card-meta">Collaboration #{{ app.collaborationId }}</span>
-              <p class="app-card-desc" *ngIf="app.proposalMessage">{{ app.proposalMessage | slice:0:80 }}...</p>
+              <span class="app-card-collab-title">{{ getCollaborationTitle(app.collaborationId) }}</span>
+              <span class="app-card-meta">Request #{{ app.id }} · Collab #{{ app.collaborationId }}</span>
+              <p class="app-card-desc" *ngIf="app.proposalMessage">{{ app.proposalMessage | slice:0:80 }}{{ app.proposalMessage.length > 80 ? '...' : '' }}</p>
             </div>
             <div class="app-card-right app-card-right-my">
               <span class="badge badge-pill badge-status status-{{ (app.status || '').toLowerCase() }}">{{ app.status }}</span>

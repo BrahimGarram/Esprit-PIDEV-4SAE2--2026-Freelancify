@@ -75,7 +75,12 @@ public class KeycloakService {
             String msg = "Failed to get admin access token (" + e.getStatusCode().value() + "). "
                 + "Ensure Keycloak is running at " + keycloakAdminUrl + " and reachable from this host.";
             if (e.getStatusCode().value() == 404) {
-                msg += " The server at " + keycloakAdminUrl + " did not respond with Keycloak (404). Ensure no other application is using that port.";
+                boolean html404 = responseBody != null && (responseBody.contains("DOCTYPE") || responseBody.contains("IETF") || responseBody.contains("<HTML"));
+                if (html404) {
+                    msg = "Port 8080 returned 404 with an HTML page (not Keycloak). Another application (e.g. Apache, XAMPP) may be using port 8080. Stop it and ensure only Keycloak runs on 8080, or run Keycloak on another port and set keycloak.admin.url accordingly.";
+                } else {
+                    msg += " The server at " + keycloakAdminUrl + " did not respond with Keycloak (404). Ensure no other application is using that port.";
+                }
             }
             throw new RuntimeException(msg, e);
         } catch (Exception e) {

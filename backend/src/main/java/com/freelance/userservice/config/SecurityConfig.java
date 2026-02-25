@@ -61,6 +61,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/users/register").permitAll()
                 .requestMatchers("/api/users/forgot-password").permitAll()
                 .requestMatchers("/api/users/reset-password").permitAll()
+                .requestMatchers("/api/admin/seed-users").permitAll() // Allow user seeding without auth
+                .requestMatchers("/api/admin/sync-all-users").permitAll() // Allow user sync without auth
+                .requestMatchers("/api/admin/get-user-id-mapping").permitAll() // Allow ID mapping
+                .requestMatchers("/api/admin/update-sql-migration").permitAll() // Allow SQL update
+                .requestMatchers("/api/admin/health").permitAll() // Allow health check
                 .requestMatchers("/uploads/**").permitAll() // Allow access to uploaded files
                 
                 // Admin only endpoints (must come before more general patterns)
@@ -96,7 +101,12 @@ public class SecurityConfig {
                     // For permitAll endpoints, don't block - let request proceed
                     if (path.equals("/api/users/register") || 
                         path.equals("/api/users/forgot-password") || 
-                        path.equals("/api/users/reset-password")) {
+                        path.equals("/api/users/reset-password") ||
+                        path.equals("/api/admin/seed-users") ||
+                        path.equals("/api/admin/sync-all-users") ||
+                        path.equals("/api/admin/get-user-id-mapping") ||
+                        path.equals("/api/admin/update-sql-migration") ||
+                        path.equals("/api/admin/health")) {
                         // Allow the request to continue
                         return;
                     }
@@ -160,7 +170,12 @@ public class SecurityConfig {
             // For permitAll endpoints, return null to skip token validation
             if (path.equals("/api/users/register") || 
                 path.equals("/api/users/forgot-password") || 
-                path.equals("/api/users/reset-password")) {
+                path.equals("/api/users/reset-password") ||
+                path.equals("/api/admin/seed-users") ||
+                path.equals("/api/admin/sync-all-users") ||
+                path.equals("/api/admin/get-user-id-mapping") ||
+                path.equals("/api/admin/update-sql-migration") ||
+                path.equals("/api/admin/health")) {
                 return null;
             }
             // For other endpoints, extract Bearer token from Authorization header

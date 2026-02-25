@@ -41,6 +41,15 @@ export class ToastService {
     this.show(message, 'error', duration);
   }
 
+  // Aliases for compatibility
+  showSuccess(message: string, duration?: number) {
+    this.success(message, duration);
+  }
+
+  showError(message: string, duration?: number) {
+    this.error(message, duration);
+  }
+
   info(message: string, duration?: number) {
     this.show(message, 'info', duration);
   }
