@@ -43,6 +43,8 @@ public class SprintService {
         
         Sprint sprint = new Sprint();
         sprint.setCollaborationId(request.getCollaborationId());
+        sprint.setProjectId(request.getCollaborationId()); // Set project ID same as collaboration ID
+        sprint.setCreatedBy(1L); // Default to user ID 1 (will be updated when we have proper auth context)
         sprint.setName(request.getName());
         sprint.setGoal(request.getGoal());
         sprint.setStartDate(request.getStartDate());

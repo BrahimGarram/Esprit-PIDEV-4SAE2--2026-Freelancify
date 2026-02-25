@@ -223,6 +223,16 @@ export class TaskDetailsModalComponent implements OnInit {
     return colors[priority] || 'bg-gray-100 text-gray-800';
   }
 
+  getPriorityClass(priority: string): string {
+    const classes: { [key: string]: string } = {
+      'LOW': 'priority-low',
+      'MEDIUM': 'priority-medium',
+      'HIGH': 'priority-high',
+      'CRITICAL': 'priority-critical'
+    };
+    return classes[priority] || 'priority-medium';
+  }
+
   getStatusColor(status: string): string {
     const colors: { [key: string]: string } = {
       'BACKLOG': 'bg-gray-100 text-gray-800',
@@ -232,5 +242,20 @@ export class TaskDetailsModalComponent implements OnInit {
       'DONE': 'bg-green-100 text-green-800'
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
+  }
+
+  getStatusClass(status: string): string {
+    const classes: { [key: string]: string } = {
+      'BACKLOG': 'status-backlog',
+      'TODO': 'status-todo',
+      'IN_PROGRESS': 'status-in-progress',
+      'REVIEW': 'status-review',
+      'DONE': 'status-done'
+    };
+    return classes[status] || 'status-todo';
+  }
+
+  formatStatus(status: string): string {
+    return status.replace(/_/g, ' ');
   }
 }

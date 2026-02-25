@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WorkspaceService, Sprint } from '../../../services/workspace.service';
 
@@ -9,6 +9,7 @@ import { WorkspaceService, Sprint } from '../../../services/workspace.service';
 })
 export class SprintListComponent implements OnInit {
   @Input() collaborationId!: number;
+  @Output() sprintChanged = new EventEmitter<void>();
 
   sprints: Sprint[] = [];
   loading = false;
@@ -66,6 +67,7 @@ export class SprintListComponent implements OnInit {
       next: () => {
         this.loadSprints();
         this.cancelForm();
+        this.sprintChanged.emit(); // Notify parent to refresh dashboard
       },
       error: (error) => console.error('Error creating sprint:', error)
     });
@@ -75,7 +77,10 @@ export class SprintListComponent implements OnInit {
     if (!confirm(`Start sprint "${sprint.name}"?`)) return;
 
     this.workspaceService.startSprint(sprint.id!).subscribe({
-      next: () => this.loadSprints(),
+      next: () => {
+        this.loadSprints();
+        this.sprintChanged.emit(); // Notify parent to refresh dashboard
+      },
       error: (error) => console.error('Error starting sprint:', error)
     });
   }
@@ -84,7 +89,10 @@ export class SprintListComponent implements OnInit {
     if (!confirm(`Complete sprint "${sprint.name}"?`)) return;
 
     this.workspaceService.completeSprint(sprint.id!).subscribe({
-      next: () => this.loadSprints(),
+      next: () => {
+        this.loadSprints();
+        this.sprintChanged.emit(); // Notify parent to refresh dashboard
+      },
       error: (error) => console.error('Error completing sprint:', error)
     });
   }

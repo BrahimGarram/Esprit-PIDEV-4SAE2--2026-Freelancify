@@ -103,7 +103,9 @@
       <span>Use filters above to find projects by skills, budget, and duration. Only <strong>Open</strong> projects accept applications — apply with a clear proposal and your proposed price.</span>
     </div>
 
-    <div *ngIf="isLoading" class="loading">Loading...</div>
+    <div *ngIf="isLoading" class="card-grid card-grid-equal">
+      <div class="skeleton skeleton-card" *ngFor="let i of [1,2,3,4,5,6]"></div>
+    </div>
 
     <section class="section-cards section-spaced" *ngIf="!isLoading && filteredCollaborations.length">
       <h2 class="section-title section-title-main">

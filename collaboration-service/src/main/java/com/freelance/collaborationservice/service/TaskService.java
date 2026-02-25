@@ -43,9 +43,11 @@ public class TaskService {
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
         task.setAssignedFreelancerId(request.getAssignedFreelancerId());
+        task.setAssignedTo(request.getAssignedFreelancerId()); // Set both fields
         task.setPriority(request.getPriority() != null ? request.getPriority() : TaskPriority.MEDIUM);
         task.setStatus(request.getStatus() != null ? request.getStatus() : TaskStatus.TODO);
         task.setDeadline(request.getDeadline());
+        task.setDueDate(request.getDeadline()); // Set both deadline fields
         task.setEstimatedHours(request.getEstimatedHours() != null ? request.getEstimatedHours() : 0);
         task.setAttachments(request.getAttachments());
         task.setMilestoneId(request.getMilestoneId());
@@ -53,6 +55,8 @@ public class TaskService {
         task.setSprintId(request.getSprintId());
         task.setDependsOnTaskIds(request.getDependsOnTaskIds());
         task.setOrderIndex(request.getOrderIndex() != null ? request.getOrderIndex() : 0);
+        task.setCreatedBy(request.getAssignedFreelancerId()); // Set creator as the assigned freelancer
+        task.setProjectId(request.getCollaborationId()); // Set project ID same as collaboration ID
         
         Task savedTask = taskRepository.save(task);
         log.info("Task created successfully with ID: {}", savedTask.getId());

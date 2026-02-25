@@ -25,7 +25,7 @@ public class SprintController {
     private final SprintService sprintService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ENTERPRISE', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<SprintDTO> createSprint(@Valid @RequestBody CreateSprintRequest request) {
         log.info("REST request to create sprint: {}", request.getName());
         SprintDTO sprint = sprintService.createSprint(request);
@@ -33,7 +33,7 @@ public class SprintController {
     }
 
     @PutMapping("/{sprintId}")
-    @PreAuthorize("hasAnyRole('ENTERPRISE', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<SprintDTO> updateSprint(
             @PathVariable Long sprintId,
             @Valid @RequestBody CreateSprintRequest request) {
@@ -43,7 +43,7 @@ public class SprintController {
     }
 
     @PatchMapping("/{sprintId}/status")
-    @PreAuthorize("hasAnyRole('ENTERPRISE', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<SprintDTO> updateSprintStatus(
             @PathVariable Long sprintId,
             @RequestParam SprintStatus status) {
@@ -53,6 +53,7 @@ public class SprintController {
     }
 
     @PostMapping("/{sprintId}/start")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<SprintDTO> startSprint(@PathVariable Long sprintId) {
         log.info("REST request to start sprint: {}", sprintId);
         SprintDTO sprint = sprintService.startSprint(sprintId);
@@ -60,6 +61,7 @@ public class SprintController {
     }
 
     @PostMapping("/{sprintId}/complete")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<SprintDTO> completeSprint(@PathVariable Long sprintId) {
         log.info("REST request to complete sprint: {}", sprintId);
         SprintDTO sprint = sprintService.completeSprint(sprintId);
@@ -67,6 +69,7 @@ public class SprintController {
     }
 
     @DeleteMapping("/{sprintId}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<Void> deleteSprint(@PathVariable Long sprintId) {
         log.info("REST request to delete sprint: {}", sprintId);
         sprintService.deleteSprint(sprintId);
@@ -74,6 +77,7 @@ public class SprintController {
     }
 
     @GetMapping("/{sprintId}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN', 'CLIENT')")
     public ResponseEntity<SprintDTO> getSprint(@PathVariable Long sprintId) {
         log.info("REST request to get sprint: {}", sprintId);
         SprintDTO sprint = sprintService.getSprintById(sprintId);
@@ -81,6 +85,7 @@ public class SprintController {
     }
 
     @GetMapping("/collaboration/{collaborationId}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN', 'CLIENT')")
     public ResponseEntity<List<SprintDTO>> getSprintsByCollaboration(@PathVariable Long collaborationId) {
         log.info("REST request to get sprints for collaboration: {}", collaborationId);
         List<SprintDTO> sprints = sprintService.getSprintsByCollaboration(collaborationId);
@@ -88,6 +93,7 @@ public class SprintController {
     }
 
     @GetMapping("/collaboration/{collaborationId}/active")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN', 'CLIENT')")
     public ResponseEntity<SprintDTO> getActiveSprint(@PathVariable Long collaborationId) {
         log.info("REST request to get active sprint for collaboration: {}", collaborationId);
         Optional<SprintDTO> sprint = sprintService.getActiveSprint(collaborationId);
@@ -96,6 +102,7 @@ public class SprintController {
     }
 
     @GetMapping("/collaboration/{collaborationId}/status/{status}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN', 'CLIENT')")
     public ResponseEntity<List<SprintDTO>> getSprintsByStatus(
             @PathVariable Long collaborationId,
             @PathVariable SprintStatus status) {

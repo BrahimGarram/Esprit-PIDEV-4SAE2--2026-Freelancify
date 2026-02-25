@@ -62,6 +62,26 @@ export class TimesheetManagementComponent implements OnInit {
     return colors[status] || 'bg-gray-100 text-gray-800';
   }
 
+  getStatusClass(status: string): string {
+    const classes: { [key: string]: string } = {
+      'PENDING': 'status-pending',
+      'APPROVED': 'status-approved',
+      'REJECTED': 'status-rejected'
+    };
+    return classes[status] || 'status-pending';
+  }
+
+  getAvatarColor(name: string | undefined): string {
+    if (!name) return '#9ca3af';
+    const colors = [
+      '#ff6b35', '#4a90e2', '#50c878', '#9b59b6',
+      '#e74c3c', '#f39c12', '#1abc9c', '#34495e',
+      '#e91e63', '#00bcd4', '#8bc34a', '#ff5722'
+    ];
+    const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[index % colors.length];
+  }
+
   formatDuration(minutes: number): string {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;

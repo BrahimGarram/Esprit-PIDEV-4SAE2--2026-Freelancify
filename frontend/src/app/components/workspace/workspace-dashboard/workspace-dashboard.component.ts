@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { WorkspaceService, WorkspaceStats } from '../../../services/workspace.service';
 import { ToastService } from '../../../services/toast.service';
 
@@ -7,8 +7,9 @@ import { ToastService } from '../../../services/toast.service';
   templateUrl: './workspace-dashboard.component.html',
   styleUrls: ['./workspace-dashboard.component.css']
 })
-export class WorkspaceDashboardComponent implements OnInit {
+export class WorkspaceDashboardComponent implements OnInit, OnChanges {
   @Input() collaborationId!: number;
+  @Input() refreshTrigger: number = 0;
 
   stats: WorkspaceStats | null = null;
   teamWorkload: { [key: number]: number } = {};
@@ -27,6 +28,13 @@ export class WorkspaceDashboardComponent implements OnInit {
   ngOnInit(): void {
     this.loadStats();
     this.loadTeamWorkload();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['refreshTrigger'] && !changes['refreshTrigger'].firstChange) {
+      this.loadStats();
+      this.loadTeamWorkload();
+    }
   }
 
   loadStats(): void {

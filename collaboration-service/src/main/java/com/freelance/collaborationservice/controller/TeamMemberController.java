@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class TeamMemberController {
     private final TeamMemberService teamMemberService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ENTERPRISE', 'ADMIN')")
     public ResponseEntity<TeamMemberDTO> addTeamMember(@Valid @RequestBody AddTeamMemberRequest request) {
         log.info("REST request to add team member {} to collaboration {}", 
                 request.getFreelancerId(), request.getCollaborationId());
@@ -31,6 +33,7 @@ public class TeamMemberController {
     }
 
     @PatchMapping("/{memberId}/role")
+    @PreAuthorize("hasAnyRole('ENTERPRISE', 'ADMIN')")
     public ResponseEntity<TeamMemberDTO> updateMemberRole(
             @PathVariable Long memberId,
             @RequestParam ProjectRole role) {
@@ -40,6 +43,7 @@ public class TeamMemberController {
     }
 
     @DeleteMapping("/{memberId}")
+    @PreAuthorize("hasAnyRole('ENTERPRISE', 'ADMIN')")
     public ResponseEntity<Void> removeTeamMember(@PathVariable Long memberId) {
         log.info("REST request to remove team member: {}", memberId);
         teamMemberService.removeTeamMember(memberId);
@@ -47,6 +51,7 @@ public class TeamMemberController {
     }
 
     @GetMapping("/collaboration/{collaborationId}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<List<TeamMemberDTO>> getTeamMembers(@PathVariable Long collaborationId) {
         log.info("REST request to get team members for collaboration: {}", collaborationId);
         List<TeamMemberDTO> members = teamMemberService.getTeamMembers(collaborationId);
@@ -54,6 +59,7 @@ public class TeamMemberController {
     }
 
     @GetMapping("/freelancer/{freelancerId}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<List<TeamMemberDTO>> getFreelancerTeams(@PathVariable Long freelancerId) {
         log.info("REST request to get teams for freelancer: {}", freelancerId);
         List<TeamMemberDTO> teams = teamMemberService.getFreelancerTeams(freelancerId);
@@ -61,6 +67,7 @@ public class TeamMemberController {
     }
 
     @GetMapping("/collaboration/{collaborationId}/freelancer/{freelancerId}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<TeamMemberDTO> getTeamMember(
             @PathVariable Long collaborationId,
             @PathVariable Long freelancerId) {

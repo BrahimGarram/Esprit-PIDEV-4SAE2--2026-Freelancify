@@ -20,41 +20,54 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "project_id", nullable = false)
+    private Long projectId;
+
+    @Column(name = "collaboration_id", nullable = false)
     private Long collaborationId;
 
-    @Column(nullable = false, length = 300)
+    @Column(nullable = false, length = 200)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 2000)
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "assigned_freelancer_id", nullable = false)
     private Long assignedFreelancerId;
 
+    @Column(name = "assigned_to")
+    private Long assignedTo;
+
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private TaskPriority priority = TaskPriority.MEDIUM;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private TaskStatus status = TaskStatus.TODO;
 
+    @Column(name = "due_date")
+    private LocalDateTime dueDate;
+
+    @Column(name = "deadline")
     private LocalDateTime deadline;
 
-    @Column(nullable = false)
+    @Column(name = "estimated_hours", nullable = false)
     private Integer estimatedHours = 0;
 
-    @Column(nullable = false)
+    @Column(name = "actual_hours", nullable = false)
     private Integer actualHours = 0;
 
     @Column(columnDefinition = "TEXT")
     private String attachments;
 
+    @Column(name = "milestone_id")
     private Long milestoneId;
 
+    @Column(name = "parent_task_id")
     private Long parentTaskId;
 
+    @Column(name = "sprint_id")
     private Long sprintId;
 
     @ElementCollection
@@ -62,14 +75,19 @@ public class Task {
     @Column(name = "depends_on_task_id")
     private List<Long> dependsOnTaskIds = new ArrayList<>();
 
-    @Column(nullable = false)
+    @Column(name = "order_index")
     private Integer orderIndex = 0;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_by", nullable = false)
+    private Long createdBy;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
     @PrePersist

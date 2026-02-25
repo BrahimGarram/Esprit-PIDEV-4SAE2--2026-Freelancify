@@ -33,8 +33,14 @@ public class TimeLogService {
         Task task = taskRepository.findById(request.getTaskId())
                 .orElseThrow(() -> new RuntimeException("Task not found with ID: " + request.getTaskId()));
         
-        // Validate freelancer is assigned to task
-        if (!task.getAssignedFreelancerId().equals(request.getFreelancerId())) {
+        // Validate freelancer is assigned to task (check both fields for compatibility)
+        boolean isAssigned = task.getAssignedFreelancerId().equals(request.getFreelancerId()) ||
+                            (task.getAssignedTo() != null && task.getAssignedTo().equals(request.getFreelancerId()));
+        
+        if (!isAssigned) {
+            log.error("Freelancer {} is not assigned to task {}. Task assigned to: {} (assignedFreelancerId) or {} (assignedTo)", 
+                     request.getFreelancerId(), request.getTaskId(), 
+                     task.getAssignedFreelancerId(), task.getAssignedTo());
             throw new RuntimeException("Freelancer is not assigned to this task");
         }
         

@@ -1,126 +1,186 @@
-<div class="p-6">
+<div class="timesheet-container">
   <!-- Header -->
-  <div class="flex items-center justify-between mb-6">
-    <h2 class="text-2xl font-semibold text-gray-800">Timesheet Management</h2>
-    
-    <!-- Filter -->
-    <div class="flex items-center space-x-4">
-      <select
-        [(ngModel)]="filterStatus"
-        class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="ALL">All Status</option>
-        <option value="PENDING">Pending</option>
-        <option value="APPROVED">Approved</option>
-        <option value="REJECTED">Rejected</option>
-      </select>
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h2 class="page-title">Timesheet Management</h2>
+        <p class="page-subtitle">Track and manage time logs for your project</p>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Filter by Status:</label>
+        <select
+          [(ngModel)]="filterStatus"
+          (change)="loadTimeLogs()"
+          class="filter-select">
+          <option value="ALL">All Status</option>
+          <option value="PENDING">Pending</option>
+          <option value="APPROVED">Approved</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+      </div>
     </div>
   </div>
 
   <!-- Summary Cards -->
-  <div class="grid grid-cols-4 gap-4 mb-6">
-    <div class="bg-white border rounded-lg p-4">
-      <div class="text-sm text-gray-600 mb-1">Total Hours</div>
-      <div class="text-2xl font-bold text-gray-800">{{ totalHours.toFixed(1) }}h</div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon-wrapper stat-icon-blue">
+        <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Total Hours</div>
+        <div class="stat-value">{{ totalHours.toFixed(1) }}h</div>
+      </div>
     </div>
-    <div class="bg-white border rounded-lg p-4">
-      <div class="text-sm text-gray-600 mb-1">Total Logs</div>
-      <div class="text-2xl font-bold text-gray-800">{{ filteredTimeLogs.length }}</div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrapper stat-icon-purple">
+        <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Total Logs</div>
+        <div class="stat-value">{{ filteredTimeLogs.length }}</div>
+      </div>
     </div>
-    <div class="bg-white border rounded-lg p-4">
-      <div class="text-sm text-gray-600 mb-1">Pending</div>
-      <div class="text-2xl font-bold text-yellow-600">{{ pendingCount }}</div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrapper stat-icon-yellow">
+        <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value">{{ pendingCount }}</div>
+      </div>
     </div>
-    <div class="bg-white border rounded-lg p-4">
-      <div class="text-sm text-gray-600 mb-1">Approved</div>
-      <div class="text-2xl font-bold text-green-600">{{ approvedCount }}</div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrapper stat-icon-green">
+        <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Approved</div>
+        <div class="stat-value">{{ approvedCount }}</div>
+      </div>
     </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p class="loading-text">Loading time logs...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && filteredTimeLogs.length === 0" class="empty-state">
+    <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <h3 class="empty-title">No time logs found</h3>
+    <p class="empty-text">Time logs will appear here once team members start tracking their work</p>
   </div>
 
   <!-- Time Logs Table -->
-  <div *ngIf="loading" class="text-center py-8">
-    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-  </div>
-
-  <div *ngIf="!loading && filteredTimeLogs.length === 0" class="text-center py-12 text-gray-500">
-    No time logs found.
-  </div>
-
-  <div *ngIf="!loading && filteredTimeLogs.length > 0" class="bg-white border rounded-lg overflow-hidden">
-    <table class="w-full">
-      <thead class="bg-gray-50 border-b">
-        <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Task
-          </th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Freelancer
-          </th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Start Time
-          </th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            End Time
-          </th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Duration
-          </th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Status
-          </th>
-          <th *ngIf="isManager" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Actions
-          </th>
-        </tr>
-      </thead>
-      <tbody class="bg-white divide-y divide-gray-200">
-        <tr *ngFor="let log of filteredTimeLogs">
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm font-medium text-gray-900">{{ log.taskTitle }}</div>
-            <div *ngIf="log.description" class="text-sm text-gray-500">{{ log.description }}</div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-900">{{ log.freelancerName }}</div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-900">{{ log.startTime | date:'short' }}</div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-900">
-              {{ log.endTime ? (log.endTime | date:'short') : 'Running...' }}
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm font-medium text-gray-900">
-              {{ formatDuration(log.durationMinutes || 0) }}
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <span [class]="'px-2 py-1 rounded-full text-xs font-medium badge ' + getStatusColor(log.status)">
-              {{ log.status }}
-            </span>
-          </td>
-          <td *ngIf="isManager" class="px-6 py-4 whitespace-nowrap text-sm">
-            <div *ngIf="log.status === 'PENDING'" class="flex space-x-2">
-              <button
-                (click)="approveTimeLog(log)"
-                class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-              >
-                Approve
-              </button>
-              <button
-                (click)="rejectTimeLog(log)"
-                class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-              >
-                Reject
-              </button>
-            </div>
-            <div *ngIf="log.status !== 'PENDING'" class="text-gray-400">
-              No actions
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div *ngIf="!loading && filteredTimeLogs.length > 0" class="table-card">
+    <div class="table-wrapper">
+      <table class="time-table">
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Freelancer</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th *ngIf="isManager">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of filteredTimeLogs" class="table-row">
+            <td>
+              <div class="task-cell">
+                <div class="task-title">{{ log.taskTitle }}</div>
+                <div *ngIf="log.description" class="task-description">{{ log.description }}</div>
+              </div>
+            </td>
+            <td>
+              <div class="freelancer-cell">
+                <div class="freelancer-avatar" [style.background-color]="getAvatarColor(log.freelancerName)">
+                  {{ log.freelancerName ? log.freelancerName.charAt(0).toUpperCase() : '?' }}
+                </div>
+                <span class="freelancer-name">{{ log.freelancerName }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="time-cell">
+                <svg class="time-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>{{ log.startTime | date:'MMM d, h:mm a' }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="time-cell">
+                <svg class="time-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>{{ log.endTime ? (log.endTime | date:'MMM d, h:mm a') : 'Running...' }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="duration-badge">
+                {{ formatDuration(log.durationMinutes || 0) }}
+              </div>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(log.status)">
+                {{ log.status }}
+              </span>
+            </td>
+            <td *ngIf="isManager">
+              <div *ngIf="log.status === 'PENDING'" class="action-buttons">
+                <button
+                  (click)="approveTimeLog(log)"
+                  class="btn-approve"
+                  title="Approve">
+                  <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M5 13l4 4L19 7"/>
+                  </svg>
+                  Approve
+                </button>
+                <button
+                  (click)="rejectTimeLog(log)"
+                  class="btn-reject"
+                  title="Reject">
+                  <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                  Reject
+                </button>
+              </div>
+              <div *ngIf="log.status !== 'PENDING'" class="no-actions">
+                <span class="no-actions-text">No actions</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

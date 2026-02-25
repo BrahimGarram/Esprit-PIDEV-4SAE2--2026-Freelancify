@@ -1,136 +1,151 @@
 <div class="workspace-container">
-  <!-- Modern Header with Gradient -->
-  <div class="workspace-header">
-    <div class="max-w-7xl mx-auto px-6 py-4">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h1 class="text-2xl font-bold text-white">Project Workspace</h1>
-          <p class="text-blue-100 text-sm mt-1">Manage your project efficiently</p>
-        </div>
-        <div class="flex items-center space-x-3">
-          <button class="notification-btn">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-            </svg>
-          </button>
-          <button class="settings-btn">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-          </button>
+  <div class="workspace-layout">
+    <!-- Main Content Area -->
+    <div class="main-content">
+      <!-- Header -->
+      <div class="workspace-header">
+        <div class="header-content">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-800">Project Workspace</h1>
+            <p class="text-gray-600 text-sm mt-1">Manage your project efficiently</p>
+          </div>
+          <div class="flex items-center space-x-3">
+            <button class="notification-btn">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+            </button>
+            <button class="settings-btn">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
-      
-      <!-- Modern Navigation Tabs -->
-      <nav class="flex space-x-2" aria-label="Tabs">
+
+      <!-- Content -->
+      <div class="content-area">
+        <app-workspace-dashboard 
+          *ngIf="activeTab === 'dashboard'" 
+          [collaborationId]="collaborationId"
+          [refreshTrigger]="dashboardRefreshTrigger">
+        </app-workspace-dashboard>
+
+        <app-kanban-board 
+          *ngIf="activeTab === 'kanban'" 
+          [collaborationId]="collaborationId"
+          (taskChanged)="onDataChanged()">
+        </app-kanban-board>
+
+        <app-milestone-list 
+          *ngIf="activeTab === 'milestones'" 
+          [collaborationId]="collaborationId"
+          (milestoneChanged)="onDataChanged()">
+        </app-milestone-list>
+
+        <app-sprint-list 
+          *ngIf="activeTab === 'sprints'" 
+          [collaborationId]="collaborationId"
+          (sprintChanged)="onDataChanged()">
+        </app-sprint-list>
+
+        <app-team-management 
+          *ngIf="activeTab === 'team'" 
+          [collaborationId]="collaborationId">
+        </app-team-management>
+
+        <app-timesheet-management 
+          *ngIf="activeTab === 'timesheets'" 
+          [collaborationId]="collaborationId"
+          [freelancerId]="1"
+          [isManager]="true">
+        </app-timesheet-management>
+      </div>
+    </div>
+
+    <!-- Right Sidebar Navigation -->
+    <div class="sidebar-nav">
+      <nav class="nav-menu" aria-label="Workspace Navigation">
         <button
           (click)="setActiveTab('dashboard')"
-          [class.tab-active]="activeTab === 'dashboard'"
-          [class.tab-inactive]="activeTab !== 'dashboard'"
-          class="nav-tab">
-          <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          [class.nav-item-active]="activeTab === 'dashboard'"
+          [class.nav-item]="activeTab !== 'dashboard'"
+          class="nav-item-btn"
+          title="Dashboard">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                   d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
           </svg>
-          Dashboard
+          <span class="nav-label">Dashboard</span>
         </button>
 
         <button
           (click)="setActiveTab('kanban')"
-          [class.tab-active]="activeTab === 'kanban'"
-          [class.tab-inactive]="activeTab !== 'kanban'"
-          class="nav-tab">
-          <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          [class.nav-item-active]="activeTab === 'kanban'"
+          [class.nav-item]="activeTab !== 'kanban'"
+          class="nav-item-btn"
+          title="Kanban Board">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                   d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
           </svg>
-          Kanban Board
+          <span class="nav-label">Kanban</span>
         </button>
 
         <button
           (click)="setActiveTab('milestones')"
-          [class.tab-active]="activeTab === 'milestones'"
-          [class.tab-inactive]="activeTab !== 'milestones'"
-          class="nav-tab">
-          <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          [class.nav-item-active]="activeTab === 'milestones'"
+          [class.nav-item]="activeTab !== 'milestones'"
+          class="nav-item-btn"
+          title="Milestones">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                   d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
           </svg>
-          Milestones
+          <span class="nav-label">Milestones</span>
         </button>
 
         <button
           (click)="setActiveTab('sprints')"
-          [class.tab-active]="activeTab === 'sprints'"
-          [class.tab-inactive]="activeTab !== 'sprints'"
-          class="nav-tab">
-          <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          [class.nav-item-active]="activeTab === 'sprints'"
+          [class.nav-item]="activeTab !== 'sprints'"
+          class="nav-item-btn"
+          title="Sprints">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                   d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
-          Sprints
+          <span class="nav-label">Sprints</span>
         </button>
 
         <button
           (click)="setActiveTab('team')"
-          [class.tab-active]="activeTab === 'team'"
-          [class.tab-inactive]="activeTab !== 'team'"
-          class="nav-tab">
-          <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          [class.nav-item-active]="activeTab === 'team'"
+          [class.nav-item]="activeTab !== 'team'"
+          class="nav-item-btn"
+          title="Team">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                   d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
           </svg>
-          Team
+          <span class="nav-label">Team</span>
         </button>
 
         <button
           (click)="setActiveTab('timesheets')"
-          [class.tab-active]="activeTab === 'timesheets'"
-          [class.tab-inactive]="activeTab !== 'timesheets'"
-          class="nav-tab">
-          <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          [class.nav-item-active]="activeTab === 'timesheets'"
+          [class.nav-item]="activeTab !== 'timesheets'"
+          class="nav-item-btn"
+          title="Timesheets">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          Timesheets
+          <span class="nav-label">Timesheets</span>
         </button>
       </nav>
     </div>
-  </div>
-
-  <!-- Content Area -->
-  <div class="content-area">
-    <app-workspace-dashboard 
-      *ngIf="activeTab === 'dashboard'" 
-      [collaborationId]="collaborationId">
-    </app-workspace-dashboard>
-
-    <app-kanban-board 
-      *ngIf="activeTab === 'kanban'" 
-      [collaborationId]="collaborationId">
-    </app-kanban-board>
-
-    <app-milestone-list 
-      *ngIf="activeTab === 'milestones'" 
-      [collaborationId]="collaborationId">
-    </app-milestone-list>
-
-    <app-sprint-list 
-      *ngIf="activeTab === 'sprints'" 
-      [collaborationId]="collaborationId">
-    </app-sprint-list>
-
-    <app-team-management 
-      *ngIf="activeTab === 'team'" 
-      [collaborationId]="collaborationId">
-    </app-team-management>
-
-    <app-timesheet-management 
-      *ngIf="activeTab === 'timesheets'" 
-      [collaborationId]="collaborationId"
-      [freelancerId]="1"
-      [isManager]="true">
-    </app-timesheet-management>
   </div>
 </div>

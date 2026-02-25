@@ -123,4 +123,31 @@ export class TeamManagementComponent implements OnInit {
   formatRole(role: string): string {
     return role.replace(/_/g, ' ');
   }
+
+  getAvatarColor(name: string | undefined): string {
+    if (!name) return '#9ca3af';
+    const colors = [
+      '#ff6b35', '#4a90e2', '#50c878', '#9b59b6',
+      '#e74c3c', '#f39c12', '#1abc9c', '#34495e',
+      '#e91e63', '#00bcd4', '#8bc34a', '#ff5722'
+    ];
+    const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[index % colors.length];
+  }
+
+  getRoleColorClass(role: string): string {
+    const roleMap: { [key: string]: string } = {
+      'PROJECT_MANAGER': 'role-project-manager',
+      'FRONTEND_DEVELOPER': 'role-frontend-developer',
+      'BACKEND_DEVELOPER': 'role-backend-developer',
+      'FULLSTACK_DEVELOPER': 'role-fullstack-developer',
+      'DESIGNER': 'role-designer',
+      'QA_TESTER': 'role-qa-tester',
+      'DEVOPS_ENGINEER': 'role-devops-engineer',
+      'BUSINESS_ANALYST': 'role-business-analyst',
+      'TECHNICAL_WRITER': 'role-technical-writer',
+      'OTHER': 'role-other'
+    };
+    return roleMap[role] || 'role-other';
+  }
 }

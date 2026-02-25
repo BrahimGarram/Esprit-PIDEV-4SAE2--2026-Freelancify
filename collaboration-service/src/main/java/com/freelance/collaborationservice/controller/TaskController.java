@@ -51,6 +51,7 @@ public class TaskController {
     }
 
     @GetMapping("/{taskId}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<TaskDTO> getTask(@PathVariable Long taskId) {
         log.info("REST request to get task: {}", taskId);
         TaskDTO task = taskService.getTaskById(taskId);
@@ -58,6 +59,7 @@ public class TaskController {
     }
 
     @GetMapping("/collaboration/{collaborationId}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<List<TaskDTO>> getTasksByCollaboration(@PathVariable Long collaborationId) {
         log.info("REST request to get tasks for collaboration: {}", collaborationId);
         List<TaskDTO> tasks = taskService.getTasksByCollaboration(collaborationId);
@@ -65,6 +67,7 @@ public class TaskController {
     }
 
     @GetMapping("/collaboration/{collaborationId}/status/{status}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<List<TaskDTO>> getTasksByStatus(
             @PathVariable Long collaborationId,
             @PathVariable TaskStatus status) {
@@ -74,6 +77,7 @@ public class TaskController {
     }
 
     @GetMapping("/freelancer/{freelancerId}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<List<TaskDTO>> getTasksByFreelancer(@PathVariable Long freelancerId) {
         log.info("REST request to get tasks for freelancer: {}", freelancerId);
         List<TaskDTO> tasks = taskService.getTasksByFreelancer(freelancerId);

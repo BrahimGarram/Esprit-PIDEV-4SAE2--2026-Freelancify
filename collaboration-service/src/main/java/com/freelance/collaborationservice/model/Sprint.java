@@ -21,6 +21,12 @@ public class Sprint {
     @Column(nullable = false)
     private Long collaborationId;
 
+    @Column(name = "project_id")
+    private Long projectId;
+
+    @Column(name = "created_by")
+    private Long createdBy;
+
     @Column(nullable = false, length = 200)
     private String name;
 
@@ -37,7 +43,7 @@ public class Sprint {
     private Integer durationWeeks = 2;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 50)
     private SprintStatus status = SprintStatus.PLANNED;
 
     @Column(nullable = false, updatable = false)

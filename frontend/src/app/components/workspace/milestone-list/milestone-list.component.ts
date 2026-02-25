@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WorkspaceService, Milestone } from '../../../services/workspace.service';
 
@@ -9,6 +9,7 @@ import { WorkspaceService, Milestone } from '../../../services/workspace.service
 })
 export class MilestoneListComponent implements OnInit {
   @Input() collaborationId!: number;
+  @Output() milestoneChanged = new EventEmitter<void>();
 
   milestones: Milestone[] = [];
   loading = false;
@@ -83,6 +84,7 @@ export class MilestoneListComponent implements OnInit {
         next: () => {
           this.loadMilestones();
           this.cancelForm();
+          this.milestoneChanged.emit(); // Notify parent component
         },
         error: (error) => console.error('Error updating milestone:', error)
       });
@@ -91,6 +93,7 @@ export class MilestoneListComponent implements OnInit {
         next: () => {
           this.loadMilestones();
           this.cancelForm();
+          this.milestoneChanged.emit(); // Notify parent component
         },
         error: (error) => console.error('Error creating milestone:', error)
       });
@@ -101,8 +104,26 @@ export class MilestoneListComponent implements OnInit {
     if (!confirm(`Delete milestone "${milestone.title}"?`)) return;
 
     this.workspaceService.deleteMilestone(milestone.id!).subscribe({
-      next: () => this.loadMilestones(),
+      next: () => {
+        this.loadMilestones();
+        this.milestoneChanged.emit(); // Notify parent component
+      },
       error: (error) => console.error('Error deleting milestone:', error)
+    });
+  }
+
+  updateMilestoneStatus(milestone: Milestone, newStatus: string): void {
+    const updatedMilestone: Milestone = {
+      ...milestone,
+      status: newStatus as 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+    };
+
+    this.workspaceService.updateMilestone(milestone.id!, updatedMilestone).subscribe({
+      next: () => {
+        this.loadMilestones();
+        this.milestoneChanged.emit(); // Notify parent component
+      },
+      error: (error) => console.error('Error updating milestone status:', error)
     });
   }
 

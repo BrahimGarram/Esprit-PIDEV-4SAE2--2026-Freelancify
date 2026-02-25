@@ -21,7 +21,7 @@
 -- =====================================================
 -- 1. SAMPLE COLLABORATIONS
 -- =====================================================
-INSERT INTO collaborations (id, company_id, title, description, collaboration_type, required_skills, 
+INSERT IGNORE INTO collaborations (id, company_id, title, description, collaboration_type, required_skills, 
                            budget_min, budget_max, estimated_duration, complexity_level, deadline, 
                            confidentiality_option, max_freelancers_needed, milestone_structure, 
                            industry, status, created_at, updated_at)
@@ -50,7 +50,7 @@ VALUES
 -- =====================================================
 -- 2. SAMPLE TEAM MEMBERS
 -- =====================================================
-INSERT INTO team_members (collaboration_id, freelancer_id, role, is_active, joined_at)
+INSERT IGNORE INTO team_members (collaboration_id, freelancer_id, role, is_active, joined_at)
 VALUES 
 -- E-Commerce Platform Team
 (1, 2, 'PROJECT_MANAGER', true, '2024-01-15 09:00:00'),
@@ -72,7 +72,7 @@ VALUES
 -- =====================================================
 -- 3. SAMPLE MILESTONES
 -- =====================================================
-INSERT INTO milestones (collaboration_id, title, description, order_index, due_date, payment_amount, status, created_at)
+INSERT IGNORE INTO milestones (collaboration_id, title, description, order_index, due_date, payment_amount, status, created_at)
 VALUES 
 -- E-Commerce Platform Milestones
 (1, 'Phase 1: Design & Planning', 'Complete UI/UX design, database schema, and API documentation', 1, '2024-02-28 23:59:59', 5000.00, 'COMPLETED', '2024-01-15 10:00:00'),
@@ -92,7 +92,7 @@ VALUES
 -- =====================================================
 -- 4. SAMPLE SPRINTS
 -- =====================================================
-INSERT INTO sprints (collaboration_id, name, goal, start_date, end_date, duration_weeks, status, created_at)
+INSERT IGNORE INTO sprints (collaboration_id, name, goal, start_date, end_date, duration_weeks, status, created_at)
 VALUES 
 -- E-Commerce Platform Sprints
 (1, 'Sprint 1: Authentication & User Management', 'Implement user registration, login, JWT authentication, and profile management', '2024-03-01 00:00:00', '2024-03-14 23:59:59', 2, 'COMPLETED', '2024-02-28 10:00:00'),
@@ -107,7 +107,7 @@ VALUES
 -- =====================================================
 -- 5. SAMPLE TASKS
 -- =====================================================
-INSERT INTO tasks (collaboration_id, title, description, assigned_freelancer_id, priority, status, 
+INSERT IGNORE INTO tasks (collaboration_id, title, description, assigned_freelancer_id, priority, status, 
                   deadline, estimated_hours, actual_hours, milestone_id, sprint_id, order_index, created_at)
 VALUES 
 -- Sprint 3 Tasks (E-Commerce - Shopping Cart)
@@ -138,7 +138,7 @@ VALUES
 -- =====================================================
 -- 6. SAMPLE TASK COMMENTS
 -- =====================================================
-INSERT INTO task_comments (task_id, user_id, content, created_at)
+INSERT IGNORE INTO task_comments (task_id, user_id, content, created_at)
 VALUES 
 (1, 2, 'Great work on the cart UI! The design looks clean and intuitive.', '2024-04-02 14:30:00'),
 (1, 4, 'Thanks! I added some animations for better UX. Ready for review.', '2024-04-02 15:00:00'),
@@ -153,14 +153,14 @@ VALUES
 -- =====================================================
 -- 7. SAMPLE COMMENT MENTIONS
 -- =====================================================
-INSERT INTO comment_mentions (comment_id, mentioned_user_id)
+INSERT IGNORE INTO comment_mentions (comment_id, mentioned_user_id)
 VALUES 
 (5, 4);  -- @john mention in comment
 
 -- =====================================================
 -- 8. SAMPLE TIME LOGS
 -- =====================================================
-INSERT INTO time_logs (task_id, freelancer_id, start_time, end_time, duration_minutes, description, status, created_at)
+INSERT IGNORE INTO time_logs (task_id, freelancer_id, start_time, end_time, duration_minutes, description, status, created_at)
 VALUES 
 -- Completed time logs
 (1, 4, '2024-04-01 09:00:00', '2024-04-01 13:00:00', 240, 'Designed cart UI components and layout', 'APPROVED', '2024-04-01 09:00:00'),

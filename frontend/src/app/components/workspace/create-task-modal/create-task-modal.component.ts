@@ -138,4 +138,12 @@ export class CreateTaskModalComponent implements OnInit {
   closeModal(): void {
     this.close.emit();
   }
+
+  formatRole(role: string): string {
+    return role.replace(/_/g, ' ');
+  }
+
+  formatStatus(status: string): string {
+    return status.replace(/_/g, ' ');
+  }
 }

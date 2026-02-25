@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class MilestoneController {
     private final MilestoneService milestoneService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<MilestoneDTO> createMilestone(@Valid @RequestBody CreateMilestoneRequest request) {
         log.info("REST request to create milestone: {}", request.getTitle());
         MilestoneDTO milestone = milestoneService.createMilestone(request);
@@ -30,6 +32,7 @@ public class MilestoneController {
     }
 
     @PutMapping("/{milestoneId}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<MilestoneDTO> updateMilestone(
             @PathVariable Long milestoneId,
             @Valid @RequestBody CreateMilestoneRequest request) {
@@ -39,6 +42,7 @@ public class MilestoneController {
     }
 
     @PatchMapping("/{milestoneId}/status")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<MilestoneDTO> updateMilestoneStatus(
             @PathVariable Long milestoneId,
             @RequestParam MilestoneStatus status) {
@@ -48,6 +52,7 @@ public class MilestoneController {
     }
 
     @PostMapping("/{milestoneId}/auto-update-status")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<Void> autoUpdateMilestoneStatus(@PathVariable Long milestoneId) {
         log.info("REST request to auto-update milestone status: {}", milestoneId);
         milestoneService.autoUpdateMilestoneStatus(milestoneId);
@@ -55,6 +60,7 @@ public class MilestoneController {
     }
 
     @DeleteMapping("/{milestoneId}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN')")
     public ResponseEntity<Void> deleteMilestone(@PathVariable Long milestoneId) {
         log.info("REST request to delete milestone: {}", milestoneId);
         milestoneService.deleteMilestone(milestoneId);
@@ -62,6 +68,7 @@ public class MilestoneController {
     }
 
     @GetMapping("/{milestoneId}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN', 'CLIENT')")
     public ResponseEntity<MilestoneDTO> getMilestone(@PathVariable Long milestoneId) {
         log.info("REST request to get milestone: {}", milestoneId);
         MilestoneDTO milestone = milestoneService.getMilestoneById(milestoneId);
@@ -69,6 +76,7 @@ public class MilestoneController {
     }
 
     @GetMapping("/collaboration/{collaborationId}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN', 'CLIENT')")
     public ResponseEntity<List<MilestoneDTO>> getMilestonesByCollaboration(@PathVariable Long collaborationId) {
         log.info("REST request to get milestones for collaboration: {}", collaborationId);
         List<MilestoneDTO> milestones = milestoneService.getMilestonesByCollaboration(collaborationId);
@@ -76,6 +84,7 @@ public class MilestoneController {
     }
 
     @GetMapping("/collaboration/{collaborationId}/status/{status}")
+    @PreAuthorize("hasAnyRole('FREELANCER', 'ENTERPRISE', 'ADMIN', 'CLIENT')")
     public ResponseEntity<List<MilestoneDTO>> getMilestonesByStatus(
             @PathVariable Long collaborationId,
             @PathVariable MilestoneStatus status) {
