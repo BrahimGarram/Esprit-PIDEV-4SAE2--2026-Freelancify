@@ -1,3 +1,5 @@
+# Copy this configuration and replace "your-email@gmail.com" with your actual Gmail address
+
 spring:
   application:
     name: freelance-platform-spring-app
@@ -17,7 +19,7 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
 
-  # Email Configuration (Gmail)
+  # Email Configuration - CONFIGURED WITH YOUR GMAIL
   mail:
     host: smtp.gmail.com
     port: 587
@@ -67,4 +69,3 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     com.freelance: DEBUG
-

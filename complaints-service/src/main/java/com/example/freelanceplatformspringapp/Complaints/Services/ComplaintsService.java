@@ -54,8 +54,15 @@ public class ComplaintsService implements IComplaintsInterface {
             saved = cr.save(saved);
         }
 
-        // Send assignment notification to admin
+        // Send email notifications
         try {
+            String userEmail = getUserEmail(saved.getUserId());
+            if (userEmail != null) {
+                // Send complaint creation notification to user
+                emailService.sendComplaintCreatedNotification(userEmail, saved);
+            }
+            
+            // Send assignment notification to admin
             if (saved.getAssignedToAdminId() != null) {
                 String adminEmail = getUserEmail(saved.getAssignedToAdminId());
                 if (adminEmail != null) {
@@ -64,9 +71,31 @@ public class ComplaintsService implements IComplaintsInterface {
             }
         } catch (Exception e) {
             // Log but don't fail the complaint creation
-            System.err.println("Failed to send assignment notification: " + e.getMessage());
+            System.err.println("Failed to send email notifications: " + e.getMessage());
         }
 
+        return saved;
+    }
+
+    @Override
+    public Complaints addClaimWithEmail(Complaints complaints, String userEmail) {
+        // Save the complaint first
+        Complaints saved = addClaim(complaints);
+        
+        // Send email notification if userEmail is provided
+        if (userEmail != null && !userEmail.isEmpty()) {
+            try {
+                emailService.sendComplaintCreatedNotification(userEmail, saved);
+                System.out.println("Email sent successfully to: " + userEmail);
+            } catch (Exception e) {
+                // Log but don't fail the complaint creation
+                System.err.println("Failed to send email notification to " + userEmail + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("No email provided, skipping email notification");
+        }
+        
         return saved;
     }
 

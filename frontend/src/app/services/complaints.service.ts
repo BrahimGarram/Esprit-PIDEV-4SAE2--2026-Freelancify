@@ -113,12 +113,18 @@ export class ComplaintsService {
       fileName?: string;
       fileType?: string;
       fileSize?: number;
+      userEmail?: string;  // Add user email
     }
   ): Observable<Complaint> {
     const formData = new FormData();
     formData.append('title', data.title);
     formData.append('description', data.description);
     formData.append('priority', data.claimPriority);
+    
+    // Add user email if provided
+    if (data.userEmail) {
+      formData.append('userEmail', data.userEmail);
+    }
     
     // If imageUrl is provided (from ImgBB), send it with metadata
     if (data.imageUrl) {

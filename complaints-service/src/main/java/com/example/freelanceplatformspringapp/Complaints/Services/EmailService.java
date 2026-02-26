@@ -21,6 +21,9 @@ public class EmailService {
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
+        log.info("EmailService initialized successfully");
+        log.info("Email will be sent from: {}", fromEmail);
+        log.info("Base URL: {}", baseUrl);
     }
 
     /**
@@ -54,6 +57,47 @@ public class EmailService {
             log.info("Status change notification sent to: {}", userEmail);
         } catch (Exception e) {
             log.error("Failed to send status change notification to: {}", userEmail, e);
+        }
+    }
+
+    /**
+     * Send email notification when new complaint is created
+     */
+    public void sendComplaintCreatedNotification(String userEmail, Complaints complaint) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(userEmail);
+            message.setSubject("Complaint Received - #" + complaint.getIdReclamation());
+            
+            String body = String.format(
+                "Dear User,\n\n" +
+                "Thank you for submitting your complaint. We have received it and our team will review it shortly.\n\n" +
+                "Complaint Details:\n" +
+                "ID: %d\n" +
+                "Title: %s\n" +
+                "Description: %s\n" +
+                "Priority: %s\n" +
+                "Status: %s\n" +
+                "Category: %s\n\n" +
+                "You will receive email notifications when there are updates to your complaint.\n\n" +
+                "View your complaint: %s/complaints\n\n" +
+                "Best regards,\n" +
+                "Freelancity Support Team",
+                complaint.getIdReclamation(),
+                complaint.getTitle(),
+                complaint.getDescription(),
+                complaint.getClaimPriority(),
+                complaint.getClaimStatus(),
+                complaint.getCategory() != null ? complaint.getCategory() : "Not categorized",
+                baseUrl
+            );
+            
+            message.setText(body);
+            mailSender.send(message);
+            log.info("Complaint creation notification sent to: {}", userEmail);
+        } catch (Exception e) {
+            log.error("Failed to send complaint creation notification to: {}", userEmail, e);
         }
     }
 

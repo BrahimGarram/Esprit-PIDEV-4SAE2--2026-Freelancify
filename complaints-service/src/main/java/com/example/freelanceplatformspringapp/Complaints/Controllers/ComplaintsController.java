@@ -69,6 +69,7 @@ public class ComplaintsController {
                                           @RequestParam("description") String description,
                                           @RequestParam("priority") ClaimPriority priority,
                                           @RequestParam("userId") Long userId,
+                                          @RequestParam(value = "userEmail", required = false) String userEmail,
                                           @RequestPart(value = "file", required = false) MultipartFile file,
                                           @RequestParam(value = "imageUrl", required = false) String imageUrl,
                                           @RequestParam(value = "fileName", required = false) String fileName,
@@ -117,7 +118,8 @@ public class ComplaintsController {
             complaint.setClaimAttachment(attachment);
         }
 
-        return ic.addClaim(complaint);
+        // Save complaint and send email with userEmail if provided
+        return ic.addClaimWithEmail(complaint, userEmail);
     }
 
     @PutMapping("/update-claim")

@@ -9,6 +9,11 @@ public interface IComplaintsInterface {
 
     Complaints addClaim(Complaints complaints);
 
+    /**
+     * Add a new claim with email notification
+     */
+    Complaints addClaimWithEmail(Complaints complaints, String userEmail);
+
     Optional<Complaints> retrieveClaim(Long id);
 
     /**

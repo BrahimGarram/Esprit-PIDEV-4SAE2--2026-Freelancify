@@ -22,6 +22,7 @@ export class ComplaintsComponent implements OnInit {
   error: string | null = null;
   creating = false;
   currentUserId: number | null = null;
+  currentUserEmail: string | null = null;
 
   // Modal state
   selectedClaim: Complaint | null = null;
@@ -93,6 +94,8 @@ export class ComplaintsComponent implements OnInit {
     this.userService.getCurrentUser().subscribe({
       next: (user) => {
         this.currentUserId = user.id;
+        this.currentUserEmail = user.email || null;  // Handle undefined
+        console.log('Current user loaded:', user.id, user.email);
         this.loadComplaints();
       },
       error: (err) => {
@@ -212,7 +215,8 @@ export class ComplaintsComponent implements OnInit {
       imageUrl: imageUrl, // Send ImgBB URL
       fileName: fileMetadata.fileName,
       fileType: fileMetadata.fileType,
-      fileSize: fileMetadata.fileSize
+      fileSize: fileMetadata.fileSize,
+      userEmail: this.currentUserEmail || undefined  // Pass user email
     }).subscribe({
       next: () => {
         this.toastService.success('Claim submitted successfully with ImgBB image');
@@ -241,7 +245,8 @@ export class ComplaintsComponent implements OnInit {
       title: this.newClaim.type.trim(),
       description: this.newClaim.description.trim(),
       claimPriority: this.newClaim.claimPriority,
-      file: this.newClaim.file
+      file: this.newClaim.file,
+      userEmail: this.currentUserEmail || undefined  // Pass user email
     }).subscribe({
       next: () => {
         this.toastService.success('Claim submitted successfully');
