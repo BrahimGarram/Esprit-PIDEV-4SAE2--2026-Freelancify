@@ -16,6 +16,8 @@ import { BrowseUsersComponent } from './components/browse-users/browse-users.com
 import { MessagingComponent } from './components/messaging/messaging.component';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
+import { ComplaintsComponent } from './components/complaints/complaints.component';
+import { AdminComplaintsComponent } from './components/admin-complaints/admin-complaints.component';
 
 const routes: Routes = [
   // User-facing routes
@@ -32,15 +34,17 @@ const routes: Routes = [
   { path: 'user/:id', component: PublicProfileComponent, canActivate: [AuthGuard] },
   { path: 'user/username/:username', component: PublicProfileComponent, canActivate: [AuthGuard] },
   { path: 'projects', component: ProjectsComponent, canActivate: [AuthGuard] },
+  { path: 'complaints', component: ComplaintsComponent, canActivate: [AuthGuard] },
   
   // Admin routes
   { path: 'admin/dashboard', component: DashboardComponent, canActivate: [AdminGuard] },
   { path: 'admin/profile', component: AdminProfileComponent, canActivate: [AdminGuard] },
-  { path: 'users', component: UsersComponent, canActivate: [AdminGuard] },
+  { path: 'admin/complaints', component: AdminComplaintsComponent, canActivate: [AdminGuard] },
   { path: 'admin/users', component: UsersComponent, canActivate: [AdminGuard] },
-  { path: 'admin/test', component: SettingsComponent, canActivate: [AdminGuard] }, // Using SettingsComponent as placeholder for Test
+  { path: 'admin/test', component: SettingsComponent, canActivate: [AdminGuard] },
   { path: 'admin/projects', component: ProjectsComponent, canActivate: [AdminGuard] },
   { path: 'admin/settings', component: SettingsComponent, canActivate: [AdminGuard] },
+  { path: 'users', component: UsersComponent, canActivate: [AdminGuard] },
   
   // Fallback route
   { path: '**', redirectTo: '' }

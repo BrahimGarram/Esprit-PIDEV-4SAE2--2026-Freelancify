@@ -22,6 +22,8 @@ import { SettingsComponent } from './components/settings/settings.component';
 import { PublicProfileComponent } from './components/public-profile/public-profile.component';
 import { BrowseUsersComponent } from './components/browse-users/browse-users.component';
 import { MessagingComponent } from './components/messaging/messaging.component';
+import { ComplaintsComponent } from './components/complaints/complaints.component';
+import { AdminComplaintsComponent } from './components/admin-complaints/admin-complaints.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
@@ -67,6 +69,8 @@ function initializeKeycloak(keycloak: KeycloakService) {
     PublicProfileComponent,
     BrowseUsersComponent,
     MessagingComponent,
+    ComplaintsComponent,
+    AdminComplaintsComponent,
     NavbarComponent,
     FooterComponent,
     SidebarComponent,

@@ -1,8 +1,9 @@
 package com.example.freelanceplatformspringapp.Complaints.Entity;
 
 public enum ClaimStatus {
-    Open,
-    InProgress,
+    Pending,
+    Under_Review,
     Resolved,
-    Rejected
+    Rejected,
+    Closed
 }

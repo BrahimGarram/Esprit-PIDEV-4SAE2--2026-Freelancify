@@ -15,6 +15,11 @@ public interface IComplaintsInterface {
      * Retrieve all complaints (admin use).
      */
     List<Complaints> retrieveAllComplaints();
+    
+    /**
+     * Retrieve all visible complaints (admin use).
+     */
+    List<Complaints> retrieveAllVisibleComplaints();
 
     /**
      * Retrieve all complaints created by a specific user.

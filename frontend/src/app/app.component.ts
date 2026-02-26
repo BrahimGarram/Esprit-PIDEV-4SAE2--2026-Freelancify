@@ -182,11 +182,9 @@ export class AppComponent implements OnInit {
     this.isAuthPage = url === '/login' || url === '/signup';
     
     // Admin routes use sidebar/header layout
-    // Only /admin/projects is admin route, not /projects
+    // Only /admin/* routes are admin routes, not regular user routes like /projects or /complaints
     this.isAdminRoute = url.startsWith('/admin') || 
-                        url.startsWith('/users') || 
-                        (url.includes('/dashboard') && url.startsWith('/admin')) || 
-                        (url.includes('/settings') && url.startsWith('/admin'));
+                        url.startsWith('/users');
     
     // Don't show footer on admin routes or auth pages
     this.showFooter = !this.isAdminRoute && !this.isAuthPage;

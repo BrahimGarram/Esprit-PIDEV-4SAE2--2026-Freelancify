@@ -6,21 +6,25 @@
     </div>
   </div>
   <nav class="sidebar-nav">
-    <a (click)="navigateTo('/admin/dashboard')" class="nav-item" [class.active]="router.url === '/admin/dashboard' || router.url.startsWith('/admin/dashboard')">
+    <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
       <i class="fas fa-chart-line"></i>
       <span>Dashboard</span>
     </a>
-    <a (click)="navigateTo('/users')" class="nav-item" [class.active]="router.url === '/users' || router.url.startsWith('/admin/users')">
+    <a routerLink="/users" routerLinkActive="active" class="nav-item">
       <i class="fas fa-users"></i>
       <span>Users</span>
     </a>
-    <a (click)="navigateTo('/admin/test')" class="nav-item" [class.active]="router.url === '/admin/test' || router.url.startsWith('/admin/test')">
+    <a routerLink="/admin/test" routerLinkActive="active" class="nav-item">
       <i class="fas fa-vial"></i>
       <span>Test</span>
     </a>
-    <a (click)="navigateTo('/admin/projects')" class="nav-item" [class.active]="router.url === '/admin/projects' || router.url.startsWith('/admin/projects')">
+    <a routerLink="/admin/projects" routerLinkActive="active" class="nav-item">
       <i class="fas fa-briefcase"></i>
       <span>Projects</span>
+    </a>
+    <a routerLink="/admin/complaints" routerLinkActive="active" class="nav-item">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>Complaints</span>
     </a>
   </nav>
   <div class="sidebar-footer">

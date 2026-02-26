@@ -16,7 +16,11 @@ export class SidebarComponent {
   ) {}
 
   navigateTo(route: string) {
-    this.router.navigate([route]);
+    console.log('Navigating to:', route);
+    this.router.navigate([route]).then(
+      success => console.log('Navigation success:', success),
+      error => console.error('Navigation error:', error)
+    );
   }
 
   async logout() {
