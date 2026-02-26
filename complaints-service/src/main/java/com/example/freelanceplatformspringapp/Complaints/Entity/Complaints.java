@@ -42,7 +42,7 @@ public class Complaints {
     @Nullable
     private Date lastReminderSentAt;
     private boolean isVisible;
-    
+
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "claim_attachment_id")
     private ClaimAttachment claimAttachment;
