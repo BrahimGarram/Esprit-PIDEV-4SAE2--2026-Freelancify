@@ -39,6 +39,8 @@ import { MilestoneListComponent } from './components/workspace/milestone-list/mi
 import { SprintListComponent } from './components/workspace/sprint-list/sprint-list.component';
 import { TeamManagementComponent } from './components/workspace/team-management/team-management.component';
 import { TimesheetManagementComponent } from './components/workspace/timesheet-management/timesheet-management.component';
+import { NegotiationChatComponent } from './components/negotiation-chat/negotiation-chat.component';
+import { CounterOfferModalComponent } from './components/counter-offer-modal/counter-offer-modal.component';
 
 /**
  * Initialize Keycloak
@@ -93,7 +95,9 @@ function initializeKeycloak(keycloak: KeycloakService) {
     MilestoneListComponent,
     SprintListComponent,
     TeamManagementComponent,
-    TimesheetManagementComponent
+    TimesheetManagementComponent,
+    NegotiationChatComponent,
+    CounterOfferModalComponent
   ],
   imports: [
     BrowserModule,

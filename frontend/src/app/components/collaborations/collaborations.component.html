@@ -206,6 +206,14 @@
               <span class="app-card-collab-title">{{ getCollaborationTitle(app.collaborationId) }}</span>
               <span class="app-card-meta">Request #{{ app.id }} · Collab #{{ app.collaborationId }}</span>
               <p class="app-card-desc" *ngIf="app.proposalMessage">{{ app.proposalMessage | slice:0:80 }}{{ app.proposalMessage.length > 80 ? '...' : '' }}</p>
+              <div class="app-card-negotiation-info" *ngIf="app.negotiationStatus && app.negotiationStatus !== 'INITIAL'">
+                <span class="badge badge-pill badge-sm" [ngClass]="getNegotiationStatusClass(app.negotiationStatus)">
+                  {{ getNegotiationStatusLabel(app.negotiationStatus) }}
+                </span>
+                <span class="app-card-counter-price" *ngIf="app.counterOfferPrice">
+                  Counter: {{ formatCurrency(app.counterOfferPrice) }}
+                </span>
+              </div>
             </div>
             <div class="app-card-right app-card-right-my">
               <span class="badge badge-pill badge-status status-{{ (app.status || '').toLowerCase() }}">{{ app.status }}</span>
@@ -214,6 +222,9 @@
           </div>
           <div class="app-card-actions app-card-actions-my">
             <button class="btn-sm btn-primary" (click)="openDetailById(app.collaborationId)">View</button>
+            <button class="btn-sm btn-info" (click)="openNegotiation(app)" *ngIf="app.status === 'PENDING'">
+              <i class="fas fa-comments"></i> Negotiate
+            </button>
             <button class="btn-sm btn-outline-danger" (click)="withdrawApplication(app)" *ngIf="app.status === 'PENDING'">Withdraw</button>
           </div>
         </div>
@@ -421,11 +432,29 @@
       <h3 class="applications-title">Applications</h3>
       <div class="app-list">
         <div class="app-item" *ngFor="let app of applications">
-          <div class="app-item-row">Freelancer #{{ app.freelancerId }} – {{ app.proposalMessage | slice:0:100 }}{{ (app.proposalMessage?.length || 0) > 100 ? '...' : '' }}</div>
-          <div class="app-item-row"><span class="app-item-price">{{ formatCurrency(app.proposedPrice || 0) }}</span> – <span class="badge badge-pill status-{{ (app.status || '').toLowerCase() }}">{{ app.status }}</span></div>
-          <div *ngIf="app.status === 'PENDING'" class="app-item-actions">
-            <button class="btn-sm btn-success" (click)="acceptApplication(app)">Accept</button>
-            <button class="btn-sm btn-danger" (click)="rejectApplication(app)">Reject</button>
+          <div class="app-item-row">
+            <span>Freelancer #{{ app.freelancerId }} – {{ app.proposalMessage | slice:0:100 }}{{ (app.proposalMessage?.length || 0) > 100 ? '...' : '' }}</span>
+            <span class="badge badge-pill" [ngClass]="getNegotiationStatusClass(app.negotiationStatus)" *ngIf="app.negotiationStatus && app.negotiationStatus !== 'INITIAL'">
+              {{ getNegotiationStatusLabel(app.negotiationStatus) }}
+            </span>
+          </div>
+          <div class="app-item-row">
+            <span class="app-item-price">{{ formatCurrency(app.proposedPrice || 0) }}</span>
+            <span class="app-item-price" *ngIf="app.counterOfferPrice" style="margin-left: 8px; color: #f59e0b;">
+              → {{ formatCurrency(app.counterOfferPrice) }}
+            </span>
+            <span> – </span>
+            <span class="badge badge-pill status-{{ (app.status || '').toLowerCase() }}">{{ app.status }}</span>
+          </div>
+          <div class="app-item-actions">
+            <button class="btn-sm btn-primary" (click)="openNegotiation(app)" *ngIf="app.status === 'PENDING'">
+              <i class="fas fa-comments"></i> Negotiate
+            </button>
+            <button class="btn-sm btn-info" (click)="openCounterOffer(app)" *ngIf="app.status === 'PENDING' && canSendCounterOffer(app)">
+              <i class="fas fa-exchange-alt"></i> Counter-Offer
+            </button>
+            <button class="btn-sm btn-success" (click)="acceptApplication(app)" *ngIf="app.status === 'PENDING'">Accept</button>
+            <button class="btn-sm btn-danger" (click)="rejectApplication(app)" *ngIf="app.status === 'PENDING'">Reject</button>
           </div>
         </div>
       </div>
@@ -471,5 +500,46 @@
       <button class="btn-primary" (click)="submitApplication()">Submit application</button>
       <button class="btn-secondary" (click)="showApplyModal = false">Cancel</button>
     </div>
+  </div>
+</div>
+
+<!-- Negotiation Chat Modal -->
+<div class="modal-overlay" *ngIf="showNegotiationModal && selectedApplicationForNegotiation" (click)="showNegotiationModal = false">
+  <div class="modal modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Negotiation: {{ selectedCollaboration?.title }}</h2>
+      <button class="modal-close" (click)="showNegotiationModal = false">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 0;">
+      <app-negotiation-chat
+        [collaborationRequestId]="selectedApplicationForNegotiation.id!"
+        [freelancerId]="selectedApplicationForNegotiation.freelancerId"
+        [companyId]="selectedCollaboration?.companyId!"
+        [userType]="isFreelancer ? 'FREELANCER' : 'COMPANY'"
+        (counterOfferRequested)="openCounterOfferFromChat()">
+      </app-negotiation-chat>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="showNegotiationModal = false">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Counter-Offer Modal -->
+<div class="modal-overlay" *ngIf="showCounterOfferModal && selectedApplicationForNegotiation" (click)="showCounterOfferModal = false">
+  <div class="modal modal-lg" (click)="$event.stopPropagation()">
+    <app-counter-offer-modal
+      [collaborationRequestId]="selectedApplicationForNegotiation.id!"
+      [currentUserId]="currentUserId!"
+      [userType]="isFreelancer ? 'FREELANCER' : 'COMPANY'"
+      [originalPrice]="selectedApplicationForNegotiation.proposedPrice || 0"
+      [currentPrice]="selectedApplicationForNegotiation.counterOfferPrice"
+      [currentTimeline]="selectedApplicationForNegotiation.counterOfferTimeline"
+      [existingMilestones]="selectedApplicationForNegotiation.proposedMilestones"
+      (counterOfferSent)="onCounterOfferSent($event)"
+      (closed)="showCounterOfferModal = false">
+    </app-counter-offer-modal>
   </div>
 </div>

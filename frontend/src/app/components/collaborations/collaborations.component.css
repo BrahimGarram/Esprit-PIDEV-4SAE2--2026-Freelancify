@@ -1093,28 +1093,64 @@
 /* ========== Premium collaboration cards ========== */
 .card,
 .card-premium {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  border-radius: var(--radius-lg);
-  padding: var(--space-3);
+  position: relative;
+  background: white;
+  border-radius: 20px;
+  padding: var(--space-4);
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    0 4px 20px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+/* Gradient accent bar on top */
+.card::before,
+.card-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #FF6B35, #f7931e, #FF6B35);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 .card-premium {
-  padding: 26px 28px;
+  padding: 28px 32px;
 }
 
 .card:hover,
 .card-premium:hover {
-  transform: translateY(-8px) scale(1.02);
+  transform: translateY(-6px);
   box-shadow: 
-    0 20px 50px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 107, 53, 0.2),
-    0 0 80px rgba(255, 107, 53, 0.2);
+    0 20px 40px rgba(0, 0, 0, 0.12),
+    0 8px 16px rgba(255, 107, 53, 0.15),
+    0 0 0 1px rgba(255, 107, 53, 0.1);
+  border-color: rgba(255, 107, 53, 0.3);
+}
+
+/* Subtle glow effect on hover */
+.card:hover::after,
+.card-premium:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(255, 107, 53, 0.05) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
 }
 
 /* Parallax effect on hover */
@@ -1122,6 +1158,7 @@
 .card-premium:hover .card-title {
   transform: translateY(-2px);
   transition: transform 0.3s ease;
+  color: #FF6B35;
 }
 
 .card:hover .card-desc,
@@ -1229,119 +1266,231 @@
 
 .card-premium .card-actions {
   margin-top: auto;
-  padding-top: var(--space-2);
+  padding-top: var(--space-3);
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
+/* Primary CTA Button - Premium Design */
 .btn-cta {
-  width: 100%;
-  padding: var(--space-2) var(--space-3);
+  flex: 1;
+  min-width: 120px;
+  padding: 12px 24px;
   font-size: 0.9375rem;
   font-weight: 600;
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   border: none;
-  background: linear-gradient(135deg, var(--orange), #f7931e);
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   color: white;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 12px rgba(99, 102, 241, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Animated gradient on hover */
+.btn-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-cta:hover::before {
+  opacity: 1;
 }
 
 /* Shine effect */
 .btn-cta::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
-  transition: left 0.5s ease;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
 }
 
 .btn-cta:hover::after {
-  left: 100%;
+  width: 300px;
+  height: 300px;
+  opacity: 0;
 }
 
 .btn-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+  box-shadow: 
+    0 8px 24px rgba(99, 102, 241, 0.4),
+    0 4px 12px rgba(99, 102, 241, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .btn-cta:active {
-  transform: scale(0.95);
+  transform: translateY(0) scale(0.98);
+  box-shadow: 
+    0 2px 8px rgba(99, 102, 241, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Button text should be above pseudo-elements */
+.btn-cta span,
+.btn-cta {
+  position: relative;
+  z-index: 1;
 }
 
 .card-actions {
   display: flex;
-  gap: var(--space-1);
+  gap: var(--space-2);
   align-items: center;
   flex-wrap: wrap;
 }
 
+/* Small Buttons - Modern Design */
 .btn-sm {
-  padding: var(--space-1) var(--space-2);
+  padding: 8px 16px;
   font-size: 0.8125rem;
-  border-radius: var(--radius-sm);
+  font-weight: 600;
+  border-radius: 10px;
   cursor: pointer;
-  font-weight: 500;
-  border: 1px solid #e2e8f0;
+  border: 1.5px solid transparent;
   background: white;
-  color: #4a5568;
-  transition: background var(--transition), color var(--transition), transform var(--transition), box-shadow var(--transition);
+  color: #64748b;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
+.btn-sm::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(247, 147, 30, 0.1));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
 
+.btn-sm:hover::before {
+  opacity: 1;
+}
+
+.btn-sm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-sm:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* Primary Small Button */
 .btn-sm.btn-primary {
-  background: linear-gradient(135deg, #FF6B35, #f7931e);
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
   color: white;
-  border: none;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+}
+
+.btn-sm.btn-primary::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
 }
 
 .btn-sm.btn-primary:hover {
-  opacity: 0.95;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+}
+
+/* Outline Button */
+.btn-sm.btn-outline {
+  background: white;
+  color: #6366f1;
+  border-color: #c7d2fe;
 }
 
 .btn-sm.btn-outline:hover {
-  background: #f7fafc;
-  color: #1a202c;
+  background: #eef2ff;
+  border-color: #a5b4fc;
+  color: #4f46e5;
 }
 
+/* Success Button */
 .btn-sm.btn-success {
-  background: #38a169;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   color: white;
-  border: none;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.25);
 }
 
+.btn-sm.btn-success::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+}
+
+.btn-sm.btn-success:hover {
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);
+}
+
+/* Info Button (Workspace) */
 .btn-sm.btn-info {
-  background: #3182ce;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   color: white;
-  border: none;
+  border-color: transparent;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.25);
+}
+
+.btn-sm.btn-info::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
 }
 
 .btn-sm.btn-info:hover {
-  background: #2c5aa0;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
 }
 
+.btn-sm.btn-info i {
+  font-size: 0.75rem;
+}
+
+/* Danger Button */
 .btn-sm.btn-danger {
-  background: #e53e3e;
+  background: linear-gradient(135deg, #f43f5e, #e11d48);
   color: white;
-  border: none;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.25);
+}
+
+.btn-sm.btn-danger::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+}
+
+.btn-sm.btn-danger:hover {
+  box-shadow: 0 4px 16px rgba(244, 63, 94, 0.35);
+}
+
+/* Button content should be above pseudo-elements */
+.btn-sm > * {
+  position: relative;
+  z-index: 1;
 }
 
 .app-status {
-  font-size: 0.8rem;
-  color: #718096;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  padding: 4px 12px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 /* ========== Loading & empty ========== */
@@ -2808,4 +2957,129 @@ textarea:focus-visible {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Negotiation status badges */
+.negotiation-initial {
+  background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+  color: white;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.negotiation-negotiating {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.negotiation-counter-offered {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.negotiation-agreed {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.negotiation-declined {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Modal improvements for negotiation */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1e293b;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+/* Application item improvements */
+.app-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.app-item-row > span:first-child {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Negotiation info in freelancer application cards */
+.app-card-negotiation-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.app-card-counter-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.badge-sm {
+  font-size: 11px;
+  padding: 4px 10px;
 }

@@ -1,0 +1,73 @@
+<div class="negotiation-chat">
+  <div class="chat-header">
+    <h3><i class="fas fa-comments"></i> Negotiation Discussion</h3>
+    <span class="unread-badge" *ngIf="unreadCount > 0">{{ unreadCount }} unread</span>
+  </div>
+  
+  <div class="chat-messages" #messagesContainer>
+    <div *ngIf="isLoading" class="loading-messages">
+      <i class="fas fa-spinner fa-spin"></i> Loading messages...
+    </div>
+    
+    <div *ngIf="!isLoading && messages.length === 0" class="empty-messages">
+      <i class="fas fa-comment-dots"></i>
+      <p>No messages yet. Start the conversation!</p>
+    </div>
+    
+    <div *ngFor="let message of messages" 
+         class="message" 
+         [ngClass]="getMessageClass(message)">
+      <div class="message-header">
+        <span class="message-sender">{{ getSenderLabel(message) }}</span>
+        <span class="message-time">{{ formatTimestamp(message.createdAt) }}</span>
+      </div>
+      <div class="message-content">
+        <p>{{ message.message }}</p>
+        
+        <!-- Counter-offer details -->
+        <div *ngIf="message.messageType === 'COUNTER_OFFER' && message.metadata" class="counter-offer-details">
+          <div class="counter-offer-badge">
+            <i class="fas fa-exchange-alt"></i> Counter-Offer #{{ message.metadata.revisionNumber }}
+          </div>
+          <div class="counter-offer-info">
+            <div class="info-item">
+              <i class="fas fa-dollar-sign"></i>
+              <span>Price: ${{ message.metadata.counterOfferPrice | number:'1.2-2' }}</span>
+            </div>
+            <div class="info-item" *ngIf="message.metadata.counterOfferTimeline">
+              <i class="fas fa-clock"></i>
+              <span>Timeline: {{ message.metadata.counterOfferTimeline }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="chat-input">
+    <div class="chat-actions">
+      <button 
+        class="btn-counter-offer" 
+        (click)="openCounterOfferModal()"
+        title="Send a counter-offer with price and timeline">
+        <i class="fas fa-exchange-alt"></i>
+        Counter-Offer
+      </button>
+    </div>
+    <div class="chat-input-row">
+      <textarea 
+        [(ngModel)]="newMessage" 
+        placeholder="Type your message... (Press Enter to send, Shift+Enter for new line)"
+        (keypress)="onKeyPress($event)"
+        [disabled]="isSending"
+        rows="3"></textarea>
+      <button 
+        class="btn-send" 
+        (click)="sendMessage()" 
+        [disabled]="!newMessage.trim() || isSending">
+        <i class="fas" [class.fa-paper-plane]="!isSending" [class.fa-spinner]="isSending" [class.fa-spin]="isSending"></i>
+        {{ isSending ? 'Sending...' : 'Send' }}
+      </button>
+    </div>
+  </div>
+</div>

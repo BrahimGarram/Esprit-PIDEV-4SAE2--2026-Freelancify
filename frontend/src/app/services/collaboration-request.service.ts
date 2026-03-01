@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export type CollaborationRequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
+export type NegotiationStatus = 'INITIAL' | 'NEGOTIATING' | 'COUNTER_OFFERED' | 'AGREED' | 'DECLINED';
 
 export interface CollaborationRequestDto {
   id?: number;
@@ -13,6 +14,23 @@ export interface CollaborationRequestDto {
   status: CollaborationRequestStatus;
   createdAt?: string;
   updatedAt?: string;
+  
+  // Negotiation fields
+  negotiationStatus?: NegotiationStatus;
+  counterOfferPrice?: number;
+  counterOfferTimeline?: string;
+  counterOfferMessage?: string;
+  counterOfferedBy?: number;
+  counterOfferedAt?: string;
+  counterOfferCount?: number;
+  proposedMilestones?: any[];
+  agreedMilestones?: any[];
+  freelancerAgreed?: boolean;
+  freelancerAgreedAt?: string;
+  companyAgreed?: boolean;
+  companyAgreedAt?: string;
+  finalAgreedPrice?: number;
+  finalAgreedTimeline?: string;
 }
 
 export interface CreateCollaborationRequestDto {

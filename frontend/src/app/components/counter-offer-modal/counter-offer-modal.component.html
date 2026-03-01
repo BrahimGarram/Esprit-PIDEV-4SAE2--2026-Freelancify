@@ -1,0 +1,178 @@
+<div class="counter-offer-modal">
+  <div class="modal-header">
+    <h2><i class="fas fa-exchange-alt"></i> Send Counter-Offer</h2>
+    <button class="btn-close" (click)="close()" [disabled]="isSending">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  
+  <div class="modal-body">
+    <!-- Comparison Section -->
+    <div class="comparison-section">
+      <h3>Current Terms vs Your Counter-Offer</h3>
+      <div class="comparison-grid">
+        <div class="comparison-item">
+          <label>Current Price</label>
+          <div class="value current">${{ (currentPrice || originalPrice || 0) | number:'1.2-2' }}</div>
+        </div>
+        <div class="comparison-arrow">
+          <i class="fas fa-arrow-right"></i>
+        </div>
+        <div class="comparison-item">
+          <label>Your Counter-Offer</label>
+          <div class="value new">${{ counterOfferPrice | number:'1.2-2' }}</div>
+          <div class="change" *ngIf="counterOfferPrice > 0" 
+               [class.positive]="getPriceChange() > 0" 
+               [class.negative]="getPriceChange() < 0">
+            <i class="fas" [class.fa-arrow-up]="getPriceChange() > 0" [class.fa-arrow-down]="getPriceChange() < 0"></i>
+            {{ getPriceChange() > 0 ? '+' : '' }}${{ Math.abs(getPriceChange()) | number:'1.2-2' }}
+            ({{ getPriceChange() > 0 ? '+' : '' }}{{ getPriceChangePercent() | number:'1.1-1' }}%)
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Counter-Offer Form -->
+    <div class="form-section">
+      <div class="form-group">
+        <label class="required">Counter-Offer Price ($)</label>
+        <input 
+          type="number" 
+          [(ngModel)]="counterOfferPrice" 
+          placeholder="Enter your counter-offer price"
+          min="0"
+          step="0.01"
+          [disabled]="isSending">
+      </div>
+      
+      <div class="form-group">
+        <label class="required">Timeline</label>
+        <input 
+          type="text" 
+          [(ngModel)]="counterOfferTimeline" 
+          placeholder="e.g., 3 weeks, 2 months"
+          [disabled]="isSending">
+      </div>
+      
+      <div class="form-group">
+        <label class="required">Explanation / Message</label>
+        <textarea 
+          [(ngModel)]="counterOfferMessage" 
+          rows="4"
+          placeholder="Explain why you're proposing these terms..."
+          [disabled]="isSending"></textarea>
+        <small>Be clear and professional. Explain your reasoning.</small>
+      </div>
+    </div>
+    
+    <!-- Milestones Section -->
+    <div class="milestones-section">
+      <div class="milestones-header">
+        <h3>
+          <i class="fas fa-flag-checkered"></i> Milestone Breakdown
+          <span class="optional-badge">Optional</span>
+        </h3>
+        <button class="btn-toggle" (click)="toggleMilestones()" type="button">
+          <i class="fas" [class.fa-chevron-down]="!showMilestones" [class.fa-chevron-up]="showMilestones"></i>
+          {{ showMilestones ? 'Hide' : 'Show' }} Milestones
+        </button>
+      </div>
+      
+      <div class="milestones-body" *ngIf="showMilestones">
+        <p class="milestones-hint">
+          Break down the project into milestones with payment percentages. Total must equal 100%.
+        </p>
+        
+        <div class="milestone-item" *ngFor="let milestone of milestones; let i = index">
+          <div class="milestone-number">{{ i + 1 }}</div>
+          <div class="milestone-fields">
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label>Milestone Name</label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="milestone.name" 
+                  placeholder="e.g., Design Phase"
+                  [disabled]="isSending">
+              </div>
+              <div class="form-group flex-1">
+                <label>Payment %</label>
+                <input 
+                  type="number" 
+                  [(ngModel)]="milestone.percentage" 
+                  placeholder="30"
+                  min="0"
+                  max="100"
+                  [disabled]="isSending">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label>Deliverables</label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="milestone.deliverables" 
+                  placeholder="What will be delivered?"
+                  [disabled]="isSending">
+              </div>
+              <div class="form-group flex-1">
+                <label>Duration</label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="milestone.duration" 
+                  placeholder="1 week"
+                  [disabled]="isSending">
+              </div>
+            </div>
+          </div>
+          <button 
+            class="btn-remove-milestone" 
+            (click)="removeMilestone(i)" 
+            type="button"
+            [disabled]="milestones.length <= 1 || isSending"
+            title="Remove milestone">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+        
+        <div class="milestones-footer">
+          <button class="btn-add-milestone" (click)="addMilestone()" type="button" [disabled]="isSending">
+            <i class="fas fa-plus"></i> Add Milestone
+          </button>
+          <div class="total-percentage" [class.valid]="totalPercentage === 100" [class.invalid]="totalPercentage !== 100">
+            <span>Total:</span>
+            <strong>{{ totalPercentage }}%</strong>
+            <i class="fas fa-check-circle" *ngIf="totalPercentage === 100"></i>
+            <i class="fas fa-exclamation-circle" *ngIf="totalPercentage !== 100"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Validation Messages -->
+    <div class="validation-messages" *ngIf="!isValid">
+      <div class="validation-message" *ngIf="!counterOfferPrice || counterOfferPrice <= 0">
+        <i class="fas fa-exclamation-triangle"></i> Price must be greater than 0
+      </div>
+      <div class="validation-message" *ngIf="!counterOfferTimeline?.trim()">
+        <i class="fas fa-exclamation-triangle"></i> Timeline is required
+      </div>
+      <div class="validation-message" *ngIf="!counterOfferMessage?.trim()">
+        <i class="fas fa-exclamation-triangle"></i> Explanation message is required
+      </div>
+      <div class="validation-message" *ngIf="showMilestones && totalPercentage !== 100">
+        <i class="fas fa-exclamation-triangle"></i> Milestone percentages must total 100%
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal-footer">
+    <button class="btn-secondary" (click)="close()" [disabled]="isSending">
+      Cancel
+    </button>
+    <button class="btn-primary" (click)="sendCounterOffer()" [disabled]="!isValid || isSending">
+      <i class="fas" [class.fa-paper-plane]="!isSending" [class.fa-spinner]="isSending" [class.fa-spin]="isSending"></i>
+      {{ isSending ? 'Sending...' : 'Send Counter-Offer' }}
+    </button>
+  </div>
+</div>

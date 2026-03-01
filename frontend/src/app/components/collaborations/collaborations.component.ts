@@ -29,8 +29,11 @@ export class CollaborationsComponent implements OnInit, OnDestroy {
   showDetailModal = false;
   showApplyModal = false;
   showCreateCompanyModal = false;
+  showNegotiationModal = false;
+  showCounterOfferModal = false;
   newCompanyName = '';
   selectedCollaboration: Collaboration | null = null;
+  selectedApplicationForNegotiation: CollaborationRequestDto | null = null;
   applications: CollaborationRequestDto[] = [];
   myApplications: CollaborationRequestDto[] = [];
   allApplications: CollaborationRequestDto[] = [];
@@ -302,6 +305,16 @@ export class CollaborationsComponent implements OnInit, OnDestroy {
     if (this.filterComplexity && this.filterComplexity.trim()) {
       const comp = this.filterComplexity.trim().toLowerCase();
       list = list.filter(c => (c.complexityLevel || '').toLowerCase().includes(comp));
+    }
+    // Freelancers should not see MATCHED/IN_PROGRESS/COMPLETED collaborations unless they applied to them
+    // OPEN collaborations are always visible (accepting applications)
+    if (this.isFreelancer) {
+      list = list.filter(c => {
+        // Always show OPEN collaborations (accepting applications)
+        if (c.status === 'OPEN') return true;
+        // For non-OPEN collaborations (MATCHED, IN_PROGRESS, COMPLETED, etc.), only show if freelancer has applied
+        return this.hasApplied(c.id!);
+      });
     }
     this.filteredCollaborations = list;
   }
@@ -669,5 +682,82 @@ export class CollaborationsComponent implements OnInit, OnDestroy {
    */
   openWorkspace(collaborationId: number): void {
     this.router.navigate(['/workspace', collaborationId]);
+  }
+
+  /**
+   * Open negotiation chat modal for an application
+   */
+  openNegotiation(app: CollaborationRequestDto): void {
+    this.selectedApplicationForNegotiation = app;
+    this.showNegotiationModal = true;
+  }
+
+  /**
+   * Open counter-offer modal for an application
+   */
+  openCounterOffer(app: CollaborationRequestDto): void {
+    this.selectedApplicationForNegotiation = app;
+    this.showCounterOfferModal = true;
+  }
+  
+  /**
+   * Open counter-offer modal from negotiation chat
+   */
+  openCounterOfferFromChat(): void {
+    // Close negotiation modal and open counter-offer modal
+    this.showNegotiationModal = false;
+    this.showCounterOfferModal = true;
+  }
+
+  /**
+   * Handle counter-offer sent event
+   */
+  onCounterOfferSent(response: any): void {
+    this.showCounterOfferModal = false;
+    this.toast.success('Counter-offer sent successfully!');
+    // Reload applications to show updated data
+    this.loadApplicationsForDetail();
+    if (this.isAdminRoute) {
+      this.loadAllApplications();
+    }
+    if (this.isFreelancer) {
+      this.loadMyApplications();
+    }
+  }
+
+  /**
+   * Check if user can send counter-offer for an application
+   */
+  canSendCounterOffer(app: CollaborationRequestDto): boolean {
+    if (!app || app.status !== 'PENDING') return false;
+    // Freelancer can counter-offer if company has made an offer
+    if (this.isFreelancer && app.counterOfferedBy && app.counterOfferedBy !== this.currentUserId) {
+      return true;
+    }
+    // Company can counter-offer if freelancer has applied or countered
+    if (!this.isFreelancer && this.canManageCollaboration(this.selectedCollaboration!)) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Get negotiation status badge class
+   */
+  getNegotiationStatusClass(status?: string): string {
+    if (!status) return 'negotiation-initial';
+    return `negotiation-${status.toLowerCase().replace(/_/g, '-')}`;
+  }
+
+  /**
+   * Get negotiation status label
+   */
+  getNegotiationStatusLabel(status?: string): string {
+    if (!status || status === 'INITIAL') return 'New';
+    if (status === 'NEGOTIATING') return 'In Discussion';
+    if (status === 'COUNTER_OFFERED') return 'Counter-Offered';
+    if (status === 'AGREED') return 'Terms Agreed';
+    if (status === 'DECLINED') return 'Declined';
+    return status;
   }
 }

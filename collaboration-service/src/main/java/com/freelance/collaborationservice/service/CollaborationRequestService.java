@@ -27,6 +27,7 @@ public class CollaborationRequestService {
     private final CollaborationRequestRepository requestRepository;
     private final CollaborationRepository collaborationRepository;
     private final CollaborationService collaborationService;
+    private final TeamMemberService teamMemberService;
 
     public CollaborationRequestDTO create(CreateCollaborationRequestDTO dto) {
         if (!collaborationRepository.existsById(dto.getCollaborationId())) {
@@ -89,9 +90,47 @@ public class CollaborationRequestService {
         }
         req.setStatus(dto.getStatus());
         CollaborationRequest saved = requestRepository.save(req);
+        
+        // If accepted, add freelancer as team member
         if (dto.getStatus() == CollaborationRequestStatus.ACCEPTED) {
-            collaborationService.setStatusToMatched(req.getCollaborationId());
+            // Add freelancer as team member
+            try {
+                com.freelance.collaborationservice.dto.AddTeamMemberRequest addMemberRequest = 
+                    new com.freelance.collaborationservice.dto.AddTeamMemberRequest();
+                addMemberRequest.setCollaborationId(req.getCollaborationId());
+                addMemberRequest.setFreelancerId(req.getFreelancerId());
+                addMemberRequest.setRole(com.freelance.collaborationservice.model.ProjectRole.FULLSTACK_DEVELOPER);
+                
+                teamMemberService.addTeamMember(addMemberRequest);
+                log.info("Freelancer {} added as team member to collaboration {}", 
+                    req.getFreelancerId(), req.getCollaborationId());
+            } catch (Exception e) {
+                log.error("Failed to add freelancer as team member: {}", e.getMessage());
+                // Don't fail the acceptance if team member addition fails
+            }
+            
+            // Check if we've reached the maximum number of freelancers
+            long acceptedCount = requestRepository.findByCollaborationId(req.getCollaborationId())
+                    .stream()
+                    .filter(r -> r.getStatus() == CollaborationRequestStatus.ACCEPTED)
+                    .count();
+            
+            Integer maxFreelancers = collab.getMaxFreelancersNeeded();
+            
+            // Set to MATCHED only if max freelancers is reached
+            // If maxFreelancers is null or not set, default to 1 (single freelancer project)
+            int maxNeeded = (maxFreelancers != null && maxFreelancers > 0) ? maxFreelancers : 1;
+            
+            if (acceptedCount >= maxNeeded) {
+                collaborationService.setStatusToMatched(req.getCollaborationId());
+                log.info("Collaboration {} set to MATCHED - accepted {} of {} freelancers", 
+                    req.getCollaborationId(), acceptedCount, maxNeeded);
+            } else {
+                log.info("Collaboration {} remains OPEN - accepted {} of {} freelancers", 
+                    req.getCollaborationId(), acceptedCount, maxNeeded);
+            }
         }
+        
         log.info("Collaboration request {} - ID: {}, Status: {}", dto.getStatus(), id, dto.getStatus());
         return toDTO(saved);
     }
