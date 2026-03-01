@@ -963,6 +963,120 @@
 .user-email-detail {
   font-size: 0.875rem;
   color: #718096;
+  margin-bottom: 0.5rem;
+}
+
+/* User Penalties Inline */
+.user-penalties-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.penalty-inline-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: help;
+}
+
+.penalty-inline-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.penalty-inline-item i {
+  font-size: 0.7rem;
+}
+
+.penalty-inline-type {
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.penalty-inline-severity {
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-left: 0.25rem;
+}
+
+/* Penalty Type Colors for Inline */
+.penalty-inline-item.penalty-warning {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fbbf24;
+}
+
+.penalty-inline-item.penalty-restriction {
+  background: #fed7aa;
+  color: #9a3412;
+  border: 1px solid #fb923c;
+}
+
+.penalty-inline-item.penalty-suspension {
+  background: #fecaca;
+  color: #991b1b;
+  border: 1px solid #f87171;
+}
+
+.penalty-inline-item.penalty-fine {
+  background: #ddd6fe;
+  color: #5b21b6;
+  border: 1px solid #a78bfa;
+}
+
+.penalty-inline-item.penalty-ban {
+  background: #e5e5e5;
+  color: #1f2937;
+  border: 1px solid #6b7280;
+}
+
+/* Severity Colors for Inline */
+.penalty-inline-severity.severity-low {
+  background: #bfdbfe;
+  color: #1e40af;
+}
+
+.penalty-inline-severity.severity-medium {
+  background: #fde68a;
+  color: #92400e;
+}
+
+.penalty-inline-severity.severity-high {
+  background: #fca5a5;
+  color: #991b1b;
+}
+
+.penalty-inline-severity.severity-critical {
+  background: #1f2937;
+  color: #ffffff;
+}
+
+/* Good Standing Badge */
+.user-status-good {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #34d399;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.user-status-good i {
+  font-size: 0.7rem;
 }
 
 .attachment-details {
@@ -1357,4 +1471,305 @@
     font-size: 0.875rem;
     padding: 0.75rem 2.5rem 0.75rem 1rem;
   }
+}
+
+/* Penalty Section Styles */
+.penalty-count {
+  font-size: 0.9rem;
+  color: #ff6b35;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.penalties-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.penalty-item {
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid;
+  background: #f9fafb;
+}
+
+.penalty-warning {
+  border-left-color: #fbbf24;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+}
+
+.penalty-restriction {
+  border-left-color: #f97316;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, rgba(234, 88, 12, 0.05) 100%);
+}
+
+.penalty-suspension {
+  border-left-color: #ef4444;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%);
+}
+
+.penalty-fine {
+  border-left-color: #f59e0b;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.05) 100%);
+}
+
+.penalty-ban {
+  border-left-color: #dc2626;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(185, 28, 28, 0.1) 100%);
+}
+
+.penalty-header-small {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.penalty-badges {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.penalty-type-badge {
+  padding: 0.25rem 0.75rem;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.severity-badge-small {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.severity-low {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.severity-medium {
+  background: #fed7aa;
+  color: #92400e;
+}
+
+.severity-high {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.severity-critical {
+  background: #fca5a5;
+  color: #7f1d1d;
+}
+
+.penalty-reason {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.penalty-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.penalty-meta i {
+  margin-right: 0.25rem;
+}
+
+.no-penalties {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: #f0fdf4;
+  border-radius: 8px;
+  color: #166534;
+  margin-bottom: 1rem;
+}
+
+.no-penalties i {
+  font-size: 1.5rem;
+  color: #22c55e;
+}
+
+.assign-penalty-btn {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.assign-penalty-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+}
+
+.assign-penalty-btn i {
+  font-size: 1rem;
+}
+
+/* Penalty Modal Styles */
+.penalty-modal {
+  max-width: 600px;
+}
+
+.penalty-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-group label i {
+  color: #ff6b35;
+}
+
+.form-select,
+.form-input,
+.form-textarea {
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-select:focus,
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+}
+
+.penalty-info-box {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #1e40af;
+}
+
+.penalty-info-box i {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.info-content strong {
+  font-weight: 700;
+}
+
+.btn-cancel {
+  padding: 0.75rem 1.5rem;
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-cancel:hover {
+  background: #e5e7eb;
+}
+
+.btn-assign-penalty {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-assign-penalty:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+}
+
+.btn-assign-penalty:disabled,
+.btn-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Remove Penalty Button */
+.remove-penalty-btn {
+  padding: 0.4rem 0.6rem;
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.remove-penalty-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #dc2626;
+  transform: scale(1.05);
+}
+
+.remove-penalty-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.remove-penalty-btn i {
+  font-size: 0.85rem;
 }

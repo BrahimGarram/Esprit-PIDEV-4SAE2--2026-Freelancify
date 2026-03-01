@@ -23,6 +23,7 @@ public class ComplaintScheduledTasks {
     private final ComplaintsRepository complaintsRepository;
     private final EmailService emailService;
     private final RestTemplate restTemplate;
+    private final PenaltyRulesEngine penaltyRulesEngine;
 
     /**
      * Send reminder emails for pending complaints (runs every day at 9 AM)
@@ -120,6 +121,17 @@ public class ComplaintScheduledTasks {
         }
         
         log.info("Completed scheduled task: Auto-closed {} inactive complaints", closedCount);
+    }
+
+    /**
+     * Deactivate expired penalties (runs every day at 3 AM)
+     */
+    @Scheduled(cron = "0 0 3 * * *") // Every day at 3 AM
+    @Transactional
+    public void deactivateExpiredPenalties() {
+        log.info("Starting scheduled task: Deactivate expired penalties");
+        penaltyRulesEngine.deactivateExpiredPenalties();
+        log.info("Completed scheduled task: Deactivate expired penalties");
     }
 
     /**

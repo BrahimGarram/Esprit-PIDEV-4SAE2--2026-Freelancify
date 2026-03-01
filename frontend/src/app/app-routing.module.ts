@@ -18,6 +18,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 import { ComplaintsComponent } from './components/complaints/complaints.component';
 import { AdminComplaintsComponent } from './components/admin-complaints/admin-complaints.component';
+import { PenaltiesComponent } from './components/penalties/penalties.component';
 
 const routes: Routes = [
   // User-facing routes
@@ -35,6 +36,7 @@ const routes: Routes = [
   { path: 'user/username/:username', component: PublicProfileComponent, canActivate: [AuthGuard] },
   { path: 'projects', component: ProjectsComponent, canActivate: [AuthGuard] },
   { path: 'complaints', component: ComplaintsComponent, canActivate: [AuthGuard] },
+  { path: 'penalties', component: PenaltiesComponent, canActivate: [AuthGuard] },
   
   // Admin routes
   { path: 'admin/dashboard', component: DashboardComponent, canActivate: [AdminGuard] },

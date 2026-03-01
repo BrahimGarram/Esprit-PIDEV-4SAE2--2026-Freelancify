@@ -9,6 +9,8 @@ import {
 } from '../../services/complaints.service';
 import { UserService } from '../../services/user.service';
 import { ToastService } from '../../services/toast.service';
+import { PenaltyService, Penalty } from '../../services/penalty.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-complaints',
@@ -23,6 +25,13 @@ export class ComplaintsComponent implements OnInit {
   creating = false;
   currentUserId: number | null = null;
   currentUserEmail: string | null = null;
+  activePenalties: Penalty[] = [];
+  hasActivePenalties = false;
+  accountStatus: 'NORMAL' | 'WARNING' | 'RESTRICTED' | 'SUSPENDED' = 'NORMAL';
+  highestSeverity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | null = null;
+  isAccountRestricted = false;
+  restrictionEndDate: Date | null = null;
+  countdownText = '';
 
   // Modal state
   selectedClaim: Complaint | null = null;
@@ -79,11 +88,17 @@ export class ComplaintsComponent implements OnInit {
   constructor(
     private complaintsService: ComplaintsService,
     private userService: UserService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private penaltyService: PenaltyService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadUserAndComplaints();
+    // Update countdown every second
+    setInterval(() => {
+      this.updateCountdown();
+    }, 1000);
   }
 
   loadUserAndComplaints(): void {
@@ -97,6 +112,7 @@ export class ComplaintsComponent implements OnInit {
         this.currentUserEmail = user.email || null;  // Handle undefined
         console.log('Current user loaded:', user.id, user.email);
         this.loadComplaints();
+        this.checkPenalties();
       },
       error: (err) => {
         console.error('Error loading current user:', err);
@@ -140,6 +156,11 @@ export class ComplaintsComponent implements OnInit {
   }
 
   submitClaim(): void {
+    if (this.isAccountRestricted) {
+      this.toastService.error('Your account is restricted. You cannot submit new claims.');
+      return;
+    }
+    
     if (!this.currentUserId) {
       this.toastService.error('You must be logged in to submit a claim');
       return;
@@ -465,5 +486,151 @@ export class ComplaintsComponent implements OnInit {
     if (!this.selectedClaim) return false;
     // Only allow editing if status is Pending
     return this.selectedClaim.claimStatus === 'Pending';
+  }
+
+  checkPenalties(): void {
+    if (!this.currentUserId) return;
+
+    this.penaltyService.getActivePenalties(this.currentUserId).subscribe({
+      next: (penalties) => {
+        this.activePenalties = penalties;
+        this.hasActivePenalties = penalties.length > 0;
+        
+        if (this.hasActivePenalties) {
+          console.log('User has active penalties:', penalties);
+          this.calculateAccountStatus();
+          this.updateCountdown();
+        } else {
+          this.accountStatus = 'NORMAL';
+          this.highestSeverity = null;
+          this.isAccountRestricted = false;
+          this.restrictionEndDate = null;
+        }
+      },
+      error: (err) => {
+        console.error('Error checking penalties:', err);
+      }
+    });
+  }
+
+  calculateAccountStatus(): void {
+    if (this.activePenalties.length === 0) {
+      this.accountStatus = 'NORMAL';
+      this.highestSeverity = null;
+      this.isAccountRestricted = false;
+      this.restrictionEndDate = null;
+      return;
+    }
+
+    // Find highest severity
+    const severityOrder = { 'LOW': 1, 'MEDIUM': 2, 'HIGH': 3, 'CRITICAL': 4 };
+    let maxSeverity = 0;
+    let latestEndDate: Date | null = null;
+
+    this.activePenalties.forEach(penalty => {
+      const severityValue = severityOrder[penalty.severity];
+      if (severityValue > maxSeverity) {
+        maxSeverity = severityValue;
+        this.highestSeverity = penalty.severity;
+      }
+
+      // Check for restrictions that disable forms
+      if (penalty.penaltyType === 'ACCOUNT_RESTRICTION' || 
+          penalty.penaltyType === 'TEMPORARY_SUSPENSION' ||
+          penalty.penaltyType === 'PERMANENT_BAN') {
+        this.isAccountRestricted = true;
+        
+        if (penalty.expiresAt) {
+          const endDate = new Date(penalty.expiresAt);
+          if (!latestEndDate || endDate > latestEndDate) {
+            latestEndDate = endDate;
+          }
+        }
+      }
+    });
+
+    this.restrictionEndDate = latestEndDate;
+
+    // Set account status based on highest severity
+    if (this.highestSeverity === 'CRITICAL' || this.activePenalties.some(p => p.penaltyType === 'PERMANENT_BAN')) {
+      this.accountStatus = 'SUSPENDED';
+    } else if (this.highestSeverity === 'HIGH' || this.activePenalties.some(p => p.penaltyType === 'TEMPORARY_SUSPENSION')) {
+      this.accountStatus = 'SUSPENDED';
+    } else if (this.highestSeverity === 'MEDIUM' || this.activePenalties.some(p => p.penaltyType === 'ACCOUNT_RESTRICTION')) {
+      this.accountStatus = 'RESTRICTED';
+    } else {
+      this.accountStatus = 'WARNING';
+    }
+  }
+
+  updateCountdown(): void {
+    if (!this.restrictionEndDate) {
+      this.countdownText = '';
+      return;
+    }
+
+    const now = new Date();
+    const end = new Date(this.restrictionEndDate);
+    const diff = end.getTime() - now.getTime();
+
+    if (diff <= 0) {
+      this.countdownText = 'Restriction expired';
+      return;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    if (days > 0) {
+      this.countdownText = `${days}d ${hours}h ${minutes}m`;
+    } else if (hours > 0) {
+      this.countdownText = `${hours}h ${minutes}m ${seconds}s`;
+    } else {
+      this.countdownText = `${minutes}m ${seconds}s`;
+    }
+  }
+
+  viewPenalties(): void {
+    this.router.navigate(['/penalties']);
+  }
+
+  getPenaltyAlertClass(): string {
+    if (this.activePenalties.length === 0) return '';
+    
+    const hasCritical = this.activePenalties.some(p => p.severity === 'CRITICAL');
+    const hasHigh = this.activePenalties.some(p => p.severity === 'HIGH');
+    
+    if (hasCritical) return 'penalty-alert-critical';
+    if (hasHigh) return 'penalty-alert-high';
+    return 'penalty-alert-medium';
+  }
+
+  getStatusBarClass(): string {
+    switch (this.accountStatus) {
+      case 'WARNING': return 'status-bar-warning';
+      case 'RESTRICTED': return 'status-bar-restricted';
+      case 'SUSPENDED': return 'status-bar-suspended';
+      default: return 'status-bar-normal';
+    }
+  }
+
+  getStatusText(): string {
+    switch (this.accountStatus) {
+      case 'WARNING': return 'Account Warning';
+      case 'RESTRICTED': return 'Account Restricted';
+      case 'SUSPENDED': return 'Account Suspended';
+      default: return 'Account Active';
+    }
+  }
+
+  getStatusIcon(): string {
+    switch (this.accountStatus) {
+      case 'WARNING': return 'fa-exclamation-triangle';
+      case 'RESTRICTED': return 'fa-ban';
+      case 'SUSPENDED': return 'fa-pause-circle';
+      default: return 'fa-check-circle';
+    }
   }
 }

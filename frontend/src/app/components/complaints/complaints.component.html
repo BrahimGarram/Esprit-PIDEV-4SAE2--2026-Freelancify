@@ -1,4 +1,20 @@
 <div class="dashboard-content">
+  <!-- Account Status Bar -->
+  <div class="account-status-bar" [ngClass]="getStatusBarClass()">
+    <div class="status-bar-content">
+      <div class="status-info">
+        <i class="fas" [ngClass]="getStatusIcon()"></i>
+        <span class="status-text">{{ getStatusText() }}</span>
+        <span *ngIf="countdownText" class="countdown-timer">
+          <i class="fas fa-clock"></i> {{ countdownText }}
+        </span>
+      </div>
+      <button *ngIf="hasActivePenalties" class="btn-status-details" (click)="viewPenalties()">
+        <i class="fas fa-info-circle"></i> Details
+      </button>
+    </div>
+  </div>
+
   <div class="dashboard-header">
     <h1>My Claims</h1>
     <button class="refresh-btn" (click)="loadComplaints()" [disabled]="loading">
@@ -7,13 +23,32 @@
     </button>
   </div>
 
+  <!-- Penalty Alert Banner -->
+  <div *ngIf="hasActivePenalties" class="penalty-alert-banner" [ngClass]="getPenaltyAlertClass()">
+    <div class="penalty-alert-content">
+      <i class="fas fa-exclamation-triangle"></i>
+      <div class="penalty-alert-text">
+        <strong>You have {{ activePenalties.length }} active penalty(ies)</strong>
+        <p>Your account has been flagged for violations. Click to view details.</p>
+      </div>
+      <button class="btn-view-penalties" (click)="viewPenalties()">
+        <i class="fas fa-gavel"></i> View Penalties
+      </button>
+    </div>
+  </div>
+
   <!-- Create Claim -->
   <div class="widgets-grid">
-    <div class="widget-card">
+    <div class="widget-card" [class.disabled-card]="isAccountRestricted">
       <div class="widget-header">
         <div>
           <h3>Create a Claim</h3>
-          <p class="widget-subtitle">Submit a new complaint for review</p>
+          <p class="widget-subtitle">
+            <span *ngIf="!isAccountRestricted">Submit a new complaint for review</span>
+            <span *ngIf="isAccountRestricted" class="restriction-notice">
+              <i class="fas fa-lock"></i> Form disabled due to account restrictions
+            </span>
+          </p>
         </div>
         <i class="fas fa-plus-circle"></i>
       </div>
@@ -27,7 +62,8 @@
               <select
                 class="filter-select complaint-type-select"
                 [(ngModel)]="newClaim.type"
-                name="type">
+                name="type"
+                [disabled]="isAccountRestricted">
                 <ng-container *ngFor="let group of complaintTypes">
                   <optgroup [label]="group.group">
                     <option *ngFor="let item of group.items" [value]="item">
@@ -43,7 +79,11 @@
             <label>Priority</label>
             <div class="select-with-icon">
               <i class="fas fa-flag"></i>
-              <select class="filter-select complaint-type-select ng-valid ng-dirty ng-touched" [(ngModel)]="newClaim.claimPriority" name="priority">
+              <select 
+                class="filter-select complaint-type-select ng-valid ng-dirty ng-touched" 
+                [(ngModel)]="newClaim.claimPriority" 
+                name="priority"
+                [disabled]="isAccountRestricted">
                 <option value="Urgent">🔴 Urgent</option>
                 <option value="High">🟠 High</option>
                 <option value="Medium">🟡 Medium</option>
@@ -60,28 +100,33 @@
             name="description"
             rows="4"
             placeholder="Describe the problem in detail"
+            [disabled]="isAccountRestricted"
           ></textarea>
         </div>
 
         <div class="form-grid">
           <div class="form-group">
             <label>Attachment (optional)</label>
-            <label class="file-upload">
+            <label class="file-upload" [class.disabled]="isAccountRestricted">
               <i class="fas fa-cloud-upload-alt"></i>
               <span>{{ newClaim.attachmentName || 'Choose a file' }}</span>
               <input
                 type="file"
                 name="attachmentFile"
                 (change)="onFileSelected($event)"
+                [disabled]="isAccountRestricted"
               />
             </label>
           </div>
         </div>
 
         <div class="form-actions">
-          <button class="refresh-btn" (click)="submitClaim()" [disabled]="creating">
+          <button 
+            class="refresh-btn" 
+            (click)="submitClaim()" 
+            [disabled]="creating || isAccountRestricted">
             <i class="fas fa-paper-plane" [class.fa-spin]="creating"></i>
-            {{ creating ? 'Submitting...' : 'Submit Claim' }}
+            {{ creating ? 'Submitting...' : (isAccountRestricted ? 'Account Restricted' : 'Submit Claim') }}
           </button>
         </div>
       </div>

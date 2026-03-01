@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ComplaintsService, Complaint, ClaimStatus } from '../../services/complaints.service';
 import { ToastService } from '../../services/toast.service';
 import { UserService } from '../../services/user.service';
+import { PenaltyService, Penalty } from '../../services/penalty.service';
 
 interface ComplaintWithUser extends Complaint {
   userName?: string;
@@ -31,6 +32,19 @@ export class AdminComplaintsComponent implements OnInit {
   showModal = false;
   actionInProgress = false;
   resolutionNote = '';
+  
+  // Penalty assignment
+  showPenaltyModal = false;
+  penaltyForm = {
+    type: 'WARNING' as 'WARNING' | 'ACCOUNT_RESTRICTION' | 'TEMPORARY_SUSPENSION' | 'FINE' | 'PERMANENT_BAN',
+    severity: 'LOW' as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL',
+    reason: '',
+    description: '',
+    daysToExpire: 7,
+    fineAmount: 0
+  };
+  currentAdminId: number | null = null;
+  userPenalties: Penalty[] = [];
 
   // Statistics
   stats = {
@@ -49,11 +63,24 @@ export class AdminComplaintsComponent implements OnInit {
   constructor(
     private complaintsService: ComplaintsService,
     private toastService: ToastService,
-    private userService: UserService
+    private userService: UserService,
+    private penaltyService: PenaltyService
   ) {}
 
   ngOnInit(): void {
     this.loadAllComplaints();
+    this.loadCurrentAdmin();
+  }
+
+  loadCurrentAdmin(): void {
+    this.userService.getCurrentUser().subscribe({
+      next: (user) => {
+        this.currentAdminId = user.id;
+      },
+      error: (err) => {
+        console.error('Error loading admin user:', err);
+      }
+    });
   }
 
   loadAllComplaints(): void {
@@ -211,16 +238,171 @@ export class AdminComplaintsComponent implements OnInit {
     this.resolutionNote = complaint.resolutionNote || '';
     this.showModal = true;
 
+    // Load user penalties
+    this.loadUserPenalties(complaint.userId);
+
     // Automatically change status to Under_Review if it's Pending
     if (complaint.claimStatus === 'Pending') {
       this.changeStatusSilently('Under_Review');
     }
   }
 
+  loadUserPenalties(userId: number): void {
+    this.penaltyService.getActivePenalties(userId).subscribe({
+      next: (penalties) => {
+        this.userPenalties = penalties;
+      },
+      error: (err) => {
+        console.error('Error loading user penalties:', err);
+        this.userPenalties = [];
+      }
+    });
+  }
+
   closeModal(): void {
     this.showModal = false;
     this.selectedClaim = null;
     this.resolutionNote = '';
+    this.userPenalties = [];
+  }
+
+  openPenaltyModal(): void {
+    if (!this.selectedClaim) return;
+    this.showPenaltyModal = true;
+    this.resetPenaltyForm();
+  }
+
+  closePenaltyModal(): void {
+    this.showPenaltyModal = false;
+    this.resetPenaltyForm();
+  }
+
+  resetPenaltyForm(): void {
+    this.penaltyForm = {
+      type: 'WARNING',
+      severity: 'LOW',
+      reason: '',
+      description: '',
+      daysToExpire: 7,
+      fineAmount: 0
+    };
+  }
+
+  assignPenalty(): void {
+    if (!this.selectedClaim || !this.currentAdminId) {
+      this.toastService.error('Unable to assign penalty');
+      return;
+    }
+
+    if (!this.penaltyForm.reason.trim() || !this.penaltyForm.description.trim()) {
+      this.toastService.error('Please fill in reason and description');
+      return;
+    }
+
+    this.actionInProgress = true;
+
+    const penaltyRequest = {
+      userId: this.selectedClaim.userId,
+      complaintId: this.selectedClaim.idReclamation,
+      type: this.penaltyForm.type,
+      severity: this.penaltyForm.severity,
+      reason: this.penaltyForm.reason.trim(),
+      description: this.penaltyForm.description.trim(),
+      adminId: this.currentAdminId,
+      daysToExpire: this.penaltyForm.type === 'WARNING' || this.penaltyForm.type === 'PERMANENT_BAN' 
+        ? null 
+        : this.penaltyForm.daysToExpire,
+      fineAmount: this.penaltyForm.type === 'FINE' ? this.penaltyForm.fineAmount : null
+    };
+
+    this.penaltyService.applyManualPenalty(penaltyRequest).subscribe({
+      next: (penalty) => {
+        this.toastService.success('Penalty assigned successfully');
+        this.actionInProgress = false;
+        this.closePenaltyModal();
+        this.loadUserPenalties(this.selectedClaim!.userId);
+      },
+      error: (err) => {
+        console.error('Error assigning penalty:', err);
+        this.toastService.error('Failed to assign penalty');
+        this.actionInProgress = false;
+      }
+    });
+  }
+
+  onPenaltyTypeChange(): void {
+    // Auto-adjust severity based on type
+    switch (this.penaltyForm.type) {
+      case 'WARNING':
+        this.penaltyForm.severity = 'LOW';
+        break;
+      case 'ACCOUNT_RESTRICTION':
+        this.penaltyForm.severity = 'MEDIUM';
+        this.penaltyForm.daysToExpire = 7;
+        break;
+      case 'TEMPORARY_SUSPENSION':
+        this.penaltyForm.severity = 'HIGH';
+        this.penaltyForm.daysToExpire = 14;
+        break;
+      case 'FINE':
+        this.penaltyForm.severity = 'MEDIUM';
+        this.penaltyForm.fineAmount = 50;
+        break;
+      case 'PERMANENT_BAN':
+        this.penaltyForm.severity = 'CRITICAL';
+        break;
+    }
+  }
+
+  getPenaltyTypeClass(type: string): string {
+    switch (type) {
+      case 'WARNING': return 'penalty-warning';
+      case 'ACCOUNT_RESTRICTION': return 'penalty-restriction';
+      case 'TEMPORARY_SUSPENSION': return 'penalty-suspension';
+      case 'FINE': return 'penalty-fine';
+      case 'PERMANENT_BAN': return 'penalty-ban';
+      default: return 'penalty-warning';
+    }
+  }
+
+  getSeverityClass(severity: string): string {
+    switch (severity) {
+      case 'LOW': return 'severity-low';
+      case 'MEDIUM': return 'severity-medium';
+      case 'HIGH': return 'severity-high';
+      case 'CRITICAL': return 'severity-critical';
+      default: return 'severity-low';
+    }
+  }
+
+  formatPenaltyDate(dateString?: string): string {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  }
+
+  removePenalty(penalty: Penalty): void {
+    if (!confirm(`Are you sure you want to remove this penalty?\n\nType: ${penalty.penaltyType}\nReason: ${penalty.reason}\n\nThis action cannot be undone.`)) {
+      return;
+    }
+
+    this.actionInProgress = true;
+
+    this.penaltyService.deactivatePenalty(penalty.idPenalty).subscribe({
+      next: () => {
+        this.toastService.success('Penalty removed successfully');
+        this.actionInProgress = false;
+        // Reload penalties
+        if (this.selectedClaim) {
+          this.loadUserPenalties(this.selectedClaim.userId);
+        }
+      },
+      error: (err) => {
+        console.error('Error removing penalty:', err);
+        this.toastService.error('Failed to remove penalty');
+        this.actionInProgress = false;
+      }
+    });
   }
 
   changeStatusSilently(newStatus: ClaimStatus): void {

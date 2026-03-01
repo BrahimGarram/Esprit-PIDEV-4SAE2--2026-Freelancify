@@ -18,6 +18,7 @@ public class ComplaintsService implements IComplaintsInterface {
     private final AutoAssignmentService autoAssignmentService;
     private final EmailService emailService;
     private final org.springframework.web.client.RestTemplate restTemplate;
+    private final PenaltyRulesEngine penaltyRulesEngine;
 
     @Override
     public Complaints addClaim(Complaints complaints) {
@@ -81,6 +82,13 @@ public class ComplaintsService implements IComplaintsInterface {
     public Complaints addClaimWithEmail(Complaints complaints, String userEmail) {
         // Save the complaint first
         Complaints saved = addClaim(complaints);
+        
+        // Evaluate penalty rules for the user
+        try {
+            penaltyRulesEngine.evaluateRulesForUser(saved.getUserId());
+        } catch (Exception e) {
+            System.err.println("Failed to evaluate penalty rules: " + e.getMessage());
+        }
         
         // Send email notification if userEmail is provided
         if (userEmail != null && !userEmail.isEmpty()) {

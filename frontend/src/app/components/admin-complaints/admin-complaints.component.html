@@ -277,6 +277,23 @@
               <div class="user-text-info">
                 <div class="user-name-detail">{{ selectedClaim.userName || 'Unknown User' }}</div>
                 <div class="user-email-detail">{{ selectedClaim.userEmail || 'No email' }}</div>
+                
+                <!-- User Penalties Inline -->
+                <div class="user-penalties-inline" *ngIf="userPenalties.length > 0">
+                  <div class="penalty-inline-item" *ngFor="let penalty of userPenalties" 
+                       [ngClass]="getPenaltyTypeClass(penalty.penaltyType)"
+                       [title]="penalty.description">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span class="penalty-inline-type">{{ penalty.penaltyType.replace('_', ' ') }}</span>
+                    <span class="penalty-inline-severity" [ngClass]="getSeverityClass(penalty.severity)">
+                      {{ penalty.severity }}
+                    </span>
+                  </div>
+                </div>
+                <div class="user-status-good" *ngIf="userPenalties.length === 0">
+                  <i class="fas fa-check-circle"></i>
+                  <span>Good Standing</span>
+                </div>
               </div>
             </div>
           </div>
@@ -391,6 +408,50 @@
         </div>
       </div>
 
+      <!-- User Penalties Section -->
+      <div class="detail-section">
+        <h3>
+          <i class="fas fa-gavel"></i>
+          User Penalties
+          <span class="penalty-count" *ngIf="userPenalties.length > 0">({{ userPenalties.length }} active)</span>
+        </h3>
+        
+        <div class="penalties-list" *ngIf="userPenalties.length > 0">
+          <div class="penalty-item" *ngFor="let penalty of userPenalties" [ngClass]="getPenaltyTypeClass(penalty.penaltyType)">
+            <div class="penalty-header-small">
+              <div class="penalty-badges">
+                <span class="penalty-type-badge">{{ penalty.penaltyType.replace('_', ' ') }}</span>
+                <span class="severity-badge-small" [ngClass]="getSeverityClass(penalty.severity)">
+                  {{ penalty.severity }}
+                </span>
+              </div>
+              <button 
+                class="remove-penalty-btn" 
+                (click)="removePenalty(penalty)"
+                [disabled]="actionInProgress"
+                title="Remove this penalty">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="penalty-reason">{{ penalty.reason }}</div>
+            <div class="penalty-meta">
+              <span><i class="fas fa-calendar"></i> {{ formatPenaltyDate(penalty.appliedAt) }}</span>
+              <span *ngIf="penalty.expiresAt"><i class="fas fa-clock"></i> Expires: {{ formatPenaltyDate(penalty.expiresAt) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="no-penalties" *ngIf="userPenalties.length === 0">
+          <i class="fas fa-check-circle"></i>
+          <span>This user has no active penalties</span>
+        </div>
+
+        <button class="assign-penalty-btn" (click)="openPenaltyModal()">
+          <i class="fas fa-gavel"></i>
+          Assign Penalty
+        </button>
+      </div>
+
       <!-- Admin Actions -->
       <div class="detail-section">
         <h3>Admin Actions</h3>
@@ -419,6 +480,148 @@
       <button class="btn-close" (click)="closeModal()">
         <i class="fas fa-times"></i>
         Close
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Penalty Assignment Modal -->
+<div class="modal-overlay" *ngIf="showPenaltyModal" (click)="closePenaltyModal()">
+  <div class="modal-container penalty-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>
+        <i class="fas fa-gavel"></i>
+        Assign Penalty
+      </h2>
+      <button class="close-btn" (click)="closePenaltyModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="penalty-form">
+        <!-- Penalty Type -->
+        <div class="form-group">
+          <label for="penaltyType">
+            <i class="fas fa-tag"></i>
+            Penalty Type
+          </label>
+          <select 
+            id="penaltyType"
+            class="form-select"
+            [(ngModel)]="penaltyForm.type"
+            (change)="onPenaltyTypeChange()">
+            <option value="WARNING">Warning</option>
+            <option value="ACCOUNT_RESTRICTION">Account Restriction</option>
+            <option value="TEMPORARY_SUSPENSION">Temporary Suspension</option>
+            <option value="FINE">Fine</option>
+            <option value="PERMANENT_BAN">Permanent Ban</option>
+          </select>
+        </div>
+
+        <!-- Severity -->
+        <div class="form-group">
+          <label for="penaltySeverity">
+            <i class="fas fa-exclamation-triangle"></i>
+            Severity
+          </label>
+          <select 
+            id="penaltySeverity"
+            class="form-select"
+            [(ngModel)]="penaltyForm.severity">
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+            <option value="CRITICAL">Critical</option>
+          </select>
+        </div>
+
+        <!-- Days to Expire (conditional) -->
+        <div class="form-group" *ngIf="penaltyForm.type !== 'WARNING' && penaltyForm.type !== 'PERMANENT_BAN'">
+          <label for="daysToExpire">
+            <i class="fas fa-calendar-alt"></i>
+            Days Until Expiration
+          </label>
+          <input 
+            type="number"
+            id="daysToExpire"
+            class="form-input"
+            [(ngModel)]="penaltyForm.daysToExpire"
+            min="1"
+            max="365"
+          />
+        </div>
+
+        <!-- Fine Amount (conditional) -->
+        <div class="form-group" *ngIf="penaltyForm.type === 'FINE'">
+          <label for="fineAmount">
+            <i class="fas fa-dollar-sign"></i>
+            Fine Amount ($)
+          </label>
+          <input 
+            type="number"
+            id="fineAmount"
+            class="form-input"
+            [(ngModel)]="penaltyForm.fineAmount"
+            min="0"
+            step="0.01"
+          />
+        </div>
+
+        <!-- Reason -->
+        <div class="form-group">
+          <label for="penaltyReason">
+            <i class="fas fa-heading"></i>
+            Reason (Short Title)
+          </label>
+          <input 
+            type="text"
+            id="penaltyReason"
+            class="form-input"
+            [(ngModel)]="penaltyForm.reason"
+            placeholder="e.g., Repeated Invalid Complaints"
+            maxlength="100"
+          />
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label for="penaltyDescription">
+            <i class="fas fa-align-left"></i>
+            Description (Detailed Explanation)
+          </label>
+          <textarea 
+            id="penaltyDescription"
+            class="form-textarea"
+            [(ngModel)]="penaltyForm.description"
+            rows="4"
+            placeholder="Provide a detailed explanation of why this penalty is being applied..."
+          ></textarea>
+        </div>
+
+        <!-- Info Box -->
+        <div class="penalty-info-box">
+          <i class="fas fa-info-circle"></i>
+          <div class="info-content">
+            <strong>Note:</strong> This penalty will be immediately applied to the user's account.
+            The user will see this penalty on their penalties page and may have restricted access based on the penalty type.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closePenaltyModal()" [disabled]="actionInProgress">
+        <i class="fas fa-times"></i>
+        Cancel
+      </button>
+      <button 
+        class="btn-assign-penalty" 
+        (click)="assignPenalty()" 
+        [disabled]="actionInProgress || !penaltyForm.reason.trim() || !penaltyForm.description.trim()">
+        <i class="fas fa-gavel"></i>
+        {{ actionInProgress ? 'Assigning...' : 'Assign Penalty' }}
       </button>
     </div>
   </div>

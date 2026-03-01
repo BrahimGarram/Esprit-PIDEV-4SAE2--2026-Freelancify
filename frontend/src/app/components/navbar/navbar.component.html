@@ -30,6 +30,7 @@
       <li *ngIf="isAuthenticated"><a (click)="navigateTo('/browse-users')" style="cursor: pointer;"><i class="fas fa-users"></i> Browse Users</a></li>
       <li *ngIf="isAuthenticated"><a (click)="navigateTo('/messages')" style="cursor: pointer;"><i class="fas fa-envelope"></i> Messages</a></li>
       <li *ngIf="isAuthenticated"><a (click)="navigateTo('/projects')" style="cursor: pointer; font-weight: 600; color: #FF6B35;"><i class="fas fa-briefcase"></i>Projects</a></li>
+      <li *ngIf="isAuthenticated"><a (click)="navigateTo('/penalties')" style="cursor: pointer;"><i class="fas fa-gavel"></i> Penalties</a></li>
       <li *ngIf="isAuthenticated"><a (click)="navigateTo('/profile')" style="cursor: pointer;">Profile <i class="fas fa-chevron-down"></i></a></li>
       <li *ngIf="isAuthenticated && isAdmin"><a (click)="navigateTo('/admin/users')" style="cursor: pointer;">Manage Users <i class="fas fa-chevron-down"></i></a></li>
       <li><a (click)="scrollToSection('contact'); $event.preventDefault()" style="cursor: pointer;">Contact <i class="fas fa-chevron-down"></i></a></li>
