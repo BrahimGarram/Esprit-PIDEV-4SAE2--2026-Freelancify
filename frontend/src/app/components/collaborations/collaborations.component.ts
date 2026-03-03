@@ -585,6 +585,30 @@ export class CollaborationsComponent implements OnInit, OnDestroy {
     return !!company;
   }
 
+  /**
+   * Check if user can access workspace for a collaboration
+   * - Admins can access all workspaces
+   * - Companies can access their own collaboration workspaces
+   * - Freelancers can access workspaces where they have an accepted application
+   */
+  canAccessWorkspace(c: Collaboration): boolean {
+    // Admin can access all workspaces
+    if (this.isAdmin) return true;
+    
+    // Company can access their own collaboration workspaces
+    if (!this.isFreelancer && this.canManageCollaboration(c)) {
+      return true;
+    }
+    
+    // Freelancer can access workspace if they have an accepted application
+    if (this.isFreelancer) {
+      const app = this.myApplications.find(a => a.collaborationId === c.id);
+      return app?.status === 'ACCEPTED';
+    }
+    
+    return false;
+  }
+
   hasApplied(collaborationId: number): boolean {
     return this.myApplications.some(a => a.collaborationId === collaborationId);
   }

@@ -129,7 +129,7 @@
             <button class="btn-sm btn-primary btn-cta" (click)="openDetail(c)">View</button>
             <button class="btn-sm btn-outline" (click)="openEdit(c)" *ngIf="canManageCollaboration(c) && (c.status === 'OPEN' || c.status === 'ON_HOLD' || isAdmin)">Edit</button>
             <button class="btn-sm btn-success" (click)="openApplyModal(c)" *ngIf="isFreelancer && c.status === 'OPEN' && !hasApplied(c.id!)">Apply</button>
-            <button class="btn-sm btn-info" (click)="openWorkspace(c.id!)" *ngIf="c.status === 'IN_PROGRESS' || c.status === 'MATCHED'" title="Open Project Workspace">
+            <button class="btn-sm btn-info" (click)="openWorkspace(c.id!)" *ngIf="(c.status === 'IN_PROGRESS' || c.status === 'MATCHED') && canAccessWorkspace(c)" title="Open Project Workspace">
               <i class="fas fa-tasks"></i> Workspace
             </button>
             <span class="app-status" *ngIf="hasApplied(c.id!)">{{ getApplicationStatus(c.id!) }}</span>
