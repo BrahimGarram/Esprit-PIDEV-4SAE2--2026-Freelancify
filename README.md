@@ -95,28 +95,18 @@ Captures d’écran du projet (dossier `docs/screenshots/`).
 </p>
 
 <p align="center">
-  <strong>Liste des projets</strong><br>
-  <img src="docs/screenshots/projects.png" alt="Projects" width="700">
-</p>
-
-<p align="center">
   <strong>Profil utilisateur</strong><br>
   <img src="docs/screenshots/profile.png" alt="Profile" width="700">
 </p>
 
 <p align="center">
   <strong>Réclamations</strong><br>
-  <img src="docs/screenshots/complaints.png" alt="Complaints" width="700">
+  <img src="docs/screenshots/compaints.png" alt="Complaints" width="700">
 </p>
 
 <p align="center">
   <strong>Abonnements</strong><br>
   <img src="docs/screenshots/subscriptions.png" alt="Subscriptions" width="700">
-</p>
-
-<p align="center">
-  <strong>Architecture / API</strong><br>
-  <img src="docs/screenshots/architecture.png" alt="Architecture" width="700">
 </p>
 
 ---
