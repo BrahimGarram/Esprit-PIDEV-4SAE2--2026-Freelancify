@@ -18,6 +18,20 @@ body {
   color: #2d3748;
   background: #f7fafc;
   overflow-x: hidden;
+  padding-top: 0; /* Reset any default padding */
+}
+
+/* Navbar offset for fixed positioning */
+.page-content,
+.main-content,
+app-root > * {
+  padding-top: 100px; /* Default offset for navbar + top bar */
+}
+
+/* Adjust for scrolled state */
+body.scrolled .page-content,
+body.scrolled .main-content {
+  padding-top: 70px;
 }
 
 a {

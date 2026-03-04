@@ -30,6 +30,10 @@ import { FooterComponent } from './components/footer/footer.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { HeaderComponent } from './components/header/header.component';
 import { ToastComponent } from './components/toast/toast.component';
+import { SubscriptionPlansComponent } from './components/subscription-plans/subscription-plans.component';
+import { MySubscriptionComponent } from './components/my-subscription/my-subscription.component';
+import { AdminSubscriptionsComponent } from './components/admin-subscriptions/admin-subscriptions.component';
+import { SubscriptionButtonComponent } from './components/subscription-button/subscription-button.component';
 
 /**
  * Initialize Keycloak
@@ -77,7 +81,11 @@ function initializeKeycloak(keycloak: KeycloakService) {
     FooterComponent,
     SidebarComponent,
     HeaderComponent,
-    ToastComponent
+    ToastComponent,
+    SubscriptionPlansComponent,
+    MySubscriptionComponent,
+    AdminSubscriptionsComponent,
+    SubscriptionButtonComponent
   ],
   imports: [
     BrowserModule,

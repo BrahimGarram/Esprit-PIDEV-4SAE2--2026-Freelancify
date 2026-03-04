@@ -19,6 +19,9 @@ import { AdminGuard } from './guards/admin.guard';
 import { ComplaintsComponent } from './components/complaints/complaints.component';
 import { AdminComplaintsComponent } from './components/admin-complaints/admin-complaints.component';
 import { PenaltiesComponent } from './components/penalties/penalties.component';
+import { SubscriptionPlansComponent } from './components/subscription-plans/subscription-plans.component';
+import { MySubscriptionComponent } from './components/my-subscription/my-subscription.component';
+import { AdminSubscriptionsComponent } from './components/admin-subscriptions/admin-subscriptions.component';
 
 const routes: Routes = [
   // User-facing routes
@@ -37,12 +40,15 @@ const routes: Routes = [
   { path: 'projects', component: ProjectsComponent, canActivate: [AuthGuard] },
   { path: 'complaints', component: ComplaintsComponent, canActivate: [AuthGuard] },
   { path: 'penalties', component: PenaltiesComponent, canActivate: [AuthGuard] },
+  { path: 'subscription-plans', component: SubscriptionPlansComponent, canActivate: [AuthGuard] },
+  { path: 'my-subscription', component: MySubscriptionComponent, canActivate: [AuthGuard] },
   
   // Admin routes
   { path: 'admin/dashboard', component: DashboardComponent, canActivate: [AdminGuard] },
   { path: 'admin/profile', component: AdminProfileComponent, canActivate: [AdminGuard] },
   { path: 'admin/complaints', component: AdminComplaintsComponent, canActivate: [AdminGuard] },
   { path: 'admin/users', component: UsersComponent, canActivate: [AdminGuard] },
+  { path: 'admin/subscriptions', component: AdminSubscriptionsComponent, canActivate: [AdminGuard] },
   { path: 'admin/test', component: SettingsComponent, canActivate: [AdminGuard] },
   { path: 'admin/projects', component: ProjectsComponent, canActivate: [AdminGuard] },
   { path: 'admin/settings', component: SettingsComponent, canActivate: [AdminGuard] },

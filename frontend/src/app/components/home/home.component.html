@@ -28,6 +28,15 @@
         <span>View Profile</span>
         <i class="fas fa-user"></i>
       </a>
+      
+      <!-- Beautiful Subscription Button -->
+      <app-subscription-button 
+        *ngIf="isLoggedIn" 
+        style="pulse" 
+        size="large"
+        customText="Unlock Premium">
+      </app-subscription-button>
+      
       <a *ngIf="!isLoggedIn" routerLink="/login" class="btn-hero btn-secondary-hero">
         <i class="fas fa-play-circle"></i>
         <span>Watch Demo</span>

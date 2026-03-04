@@ -1,6 +1,7 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { KeycloakService } from 'keycloak-angular';
+import { SubscriptionService } from '../../services/subscription.service';
 import { filter } from 'rxjs/operators';
 
 @Component({
@@ -15,10 +16,14 @@ export class NavbarComponent implements OnInit {
   username = '';
   isAdmin = false;
   showServicesDropdown = false;
+  showUserDropdown = false;
+  unreadCount = 0; // For messages badge
+  currentPlan: string = ''; // Current subscription plan
 
   constructor(
-    private router: Router,
-    private keycloakService: KeycloakService
+    public router: Router,
+    private keycloakService: KeycloakService,
+    private subscriptionService: SubscriptionService
   ) {}
   
   async ngOnInit() {
@@ -67,6 +72,9 @@ export class NavbarComponent implements OnInit {
           this.isAdmin = false;
         }
       }
+      
+      // Load current subscription
+      this.loadCurrentSubscription();
     } else {
       // If no token in localStorage, check KeycloakService
       try {
@@ -77,6 +85,7 @@ export class NavbarComponent implements OnInit {
             this.username = userProfile.username || this.username || '';
             const roles = await this.keycloakService.getUserRoles();
             this.isAdmin = roles.some((role: string) => role.toUpperCase() === 'ADMIN');
+            this.loadCurrentSubscription();
           } catch (error) {
             console.error('Error loading user profile:', error);
             // Fallback to localStorage values if KeycloakService fails
@@ -88,6 +97,7 @@ export class NavbarComponent implements OnInit {
           this.isAuthenticated = false;
           this.username = '';
           this.isAdmin = false;
+          this.currentPlan = '';
         }
       } catch (error) {
         // If KeycloakService fails, check localStorage as fallback
@@ -95,6 +105,7 @@ export class NavbarComponent implements OnInit {
         if (!this.isAuthenticated) {
           this.username = '';
           this.isAdmin = false;
+          this.currentPlan = '';
         }
       }
     }
@@ -102,6 +113,25 @@ export class NavbarComponent implements OnInit {
     // If authentication status changed, log it
     if (wasAuthenticated !== this.isAuthenticated) {
       console.log('Navbar: Authentication status changed to:', this.isAuthenticated);
+    }
+  }
+
+  loadCurrentSubscription(): void {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        this.subscriptionService.getActiveSubscription(user.id).subscribe({
+          next: (subscription) => {
+            this.currentPlan = subscription.plan.planName;
+          },
+          error: () => {
+            this.currentPlan = 'FREE';
+          }
+        });
+      } catch (e) {
+        this.currentPlan = '';
+      }
     }
   }
 
@@ -120,6 +150,14 @@ export class NavbarComponent implements OnInit {
 
   closeServicesDropdown() {
     this.showServicesDropdown = false;
+  }
+
+  toggleUserDropdown() {
+    this.showUserDropdown = !this.showUserDropdown;
+  }
+
+  closeUserDropdown() {
+    this.showUserDropdown = false;
   }
 
   navigateTo(route: string) {

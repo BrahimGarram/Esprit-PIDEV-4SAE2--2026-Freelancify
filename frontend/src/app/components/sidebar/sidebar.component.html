@@ -26,7 +26,25 @@
       <i class="fas fa-exclamation-triangle"></i>
       <span>Complaints</span>
     </a>
+    <a routerLink="/admin/subscriptions" routerLinkActive="active" class="nav-item">
+      <i class="fas fa-crown"></i>
+      <span>Subscriptions</span>
+    </a>
   </nav>
+  
+  <!-- Subscription CTA Section -->
+  <div class="sidebar-cta">
+    <div class="cta-content">
+      <i class="fas fa-star"></i>
+      <h4>Manage Plans</h4>
+      <p>View and manage subscription plans</p>
+    </div>
+    <app-subscription-button 
+      style="minimal" 
+      size="small"
+      customText="View Plans">
+    </app-subscription-button>
+  </div>
   <div class="sidebar-footer">
     <button (click)="logout()" class="btn-logout">
       <i class="fas fa-sign-out-alt"></i>
