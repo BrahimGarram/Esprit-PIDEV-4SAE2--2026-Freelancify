@@ -28,11 +28,19 @@ public class AffectationTest {
 
     private Integer timeSpent;
 
+    @Lob
+    private String domainScoresJson;
+
+    /** Réponses du candidat (JSON: [{"questionId":1,"answer":"..."}, ...]) pour le feedback IA. */
+    @Lob
+    @Column(columnDefinition = "LONGTEXT", nullable = true)
+    private String answersJson;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "affectation_question",
             joinColumns = @JoinColumn(name = "affectation_id"),
@@ -40,15 +48,14 @@ public class AffectationTest {
     )
     private Set<QuestionTest> questions = new HashSet<>();
 
-    // Constructor
     public AffectationTest() {
         this.assignedAt = LocalDateTime.now();
-        this.status = Status.PENDING;
+        this.status = Status.IN_PROGRESS;
         this.isValidated = false;
         this.score = 0.0;
     }
 
-    // Helper methods (IMPORTANT pour relation bidirectionnelle)
+    // Helper methods (IMPORTANT)
     public void addQuestion(QuestionTest question) {
         this.questions.add(question);
         question.getAffectations().add(this);
@@ -90,4 +97,21 @@ public class AffectationTest {
     public void setStatus(Status status) { this.status = status; }
 
     public Set<QuestionTest> getQuestions() { return questions; }
+
+    public String getDomainScoresJson() {
+        return domainScoresJson;
+    }
+
+    public void setDomainScoresJson(String domainScoresJson) {
+        this.domainScoresJson = domainScoresJson;
+    }
+
+    public String getAnswersJson() {
+        return answersJson;
+    }
+
+    public void setAnswersJson(String answersJson) {
+        this.answersJson = answersJson;
+    }
 }
+

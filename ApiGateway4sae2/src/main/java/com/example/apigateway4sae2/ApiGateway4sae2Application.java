@@ -21,7 +21,13 @@ public class ApiGateway4sae2Application {
 
         return builder.routes()
                 .route("service-test", r->r.path("/service-test/**")
-                        .uri("http://localhost:8089"))
+                        .uri("lb://SERVICE-TEST"))
+                .route("collaboration-service", r -> r.path("/collaboration/**")
+                        .filters(f -> f.rewritePath("/collaboration/(?<path>.*)", "/$\\{path}"))
+                        .uri("lb://COLLABORATION-SERVICE"))
+                .route("project-service", r -> r.path("/project/**")
+                        .filters(f -> f.rewritePath("/project/(?<path>.*)", "/${path}"))
+                        .uri("lb://PROJECT-SERVICE"))
                 .build();
     }
 }
