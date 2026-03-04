@@ -1,5 +1,12 @@
 <div align="center">
 
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+<tr>
+<td align="left" width="120">
+  <img src="https://esprit.tn/wp-content/uploads/2023/01/logo-esprit.png" width="100" height="100" style="border-radius:50%;object-fit:cover;" alt="Esprit Logo Left"/>
+</td>
+<td align="center">
+
 # 🚀 Freelance Management Platform
 
 **Microservices Architecture — Connect clients & freelancers**
@@ -9,6 +16,13 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?style=flat-square&logo=spring)](https://spring.io/)
 [![Keycloak](https://img.shields.io/badge/Keycloak-Auth-FF6900?style=flat-square)](https://www.keycloak.org/)
 [![MySQL](https://img.shields.io/badge/MySQL-Database-4479A1?style=flat-square&logo=mysql)](https://www.mysql.com/)
+
+</td>
+<td align="right" width="120">
+  <img src="https://esprit.tn/wp-content/uploads/2023/01/logo-esprit.png" width="100" height="100" style="border-radius:50%;object-fit:cover;" alt="Esprit Logo Right"/>
+</td>
+</tr>
+</table>
 
 </div>
 
@@ -84,7 +98,6 @@ A **Freelance Management Platform** built with a **microservices architecture**,
 ---
 
 ## 🏗️ Architecture
-
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────────┐     ┌──────────────────┐     ┌──────────┐
 │   Client    │────▶│   Angular   │────▶│   API Gateway   │────▶│  Microservices   │────▶│ Database │
