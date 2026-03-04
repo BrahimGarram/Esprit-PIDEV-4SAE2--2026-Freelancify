@@ -3,7 +3,7 @@
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
 <td align="left" width="120">
-  <img src="https://esprit.tn/wp-content/uploads/2023/01/logo-esprit.png" width="100" height="100" style="border-radius:50%;object-fit:cover;" alt="Esprit Logo Left"/>
+  <img src="https://www.facebook.com/esprit.tn/?locale2=tr_TR" width="100" height="100" style="border-radius:50%;object-fit:cover;" alt="Esprit Logo Left"/>
 </td>
 <td align="center">
 
