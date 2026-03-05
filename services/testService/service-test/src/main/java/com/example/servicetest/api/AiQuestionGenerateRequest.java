@@ -38,4 +38,3 @@ public class AiQuestionGenerateRequest {
         this.domains = domains;
     }
 }
-

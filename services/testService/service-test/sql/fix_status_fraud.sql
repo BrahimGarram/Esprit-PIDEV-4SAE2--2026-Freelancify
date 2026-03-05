@@ -1,5 +1,4 @@
--- Erreur "Data truncated for column 'status'" : la colonne n'accepte pas la valeur FRAUD.
--- Exécuter dans MySQL (base freelancify) pour autoriser le statut FRAUD.
+-- Autoriser le statut FRAUD (et autres valeurs du enum Status).
+-- Si la colonne est en ENUM, la passer en VARCHAR.
 
--- Si la colonne est en ENUM, la passer en VARCHAR pour accepter toutes les valeurs du Java enum.
-ALTER TABLE affectation_test MODIFY COLUMN status VARCHAR(50) NOT NULL;
+ALTER TABLE affectation MODIFY COLUMN status VARCHAR(50) NOT NULL;

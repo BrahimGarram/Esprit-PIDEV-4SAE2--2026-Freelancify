@@ -3,10 +3,12 @@ package com.freelance.projectservice.repository;
 import com.freelance.projectservice.model.Project;
 import com.freelance.projectservice.model.ProjectStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Project Repository
@@ -26,6 +28,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
      */
     List<Project> findByStatus(ProjectStatus status);
     
+    long countByStatus(ProjectStatus status);
+    
     /**
      * Find projects by owner ID and status
      */
@@ -40,4 +44,12 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
      * Find projects by category
      */
     List<Project> findByCategory(String category);
+    
+    @Query("SELECT COALESCE(SUM(p.budget), 0) FROM Project p WHERE p.budget IS NOT NULL")
+    BigDecimal sumBudget();
+    
+    long countByBudgetIsNotNull();
+    
+    @Query("SELECT COALESCE(p.category, 'Uncategorized'), COUNT(p) FROM Project p GROUP BY COALESCE(p.category, 'Uncategorized')")
+    List<Object[]> countByCategory();
 }

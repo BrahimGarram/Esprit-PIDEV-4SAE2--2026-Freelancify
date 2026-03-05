@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,11 +38,11 @@ public class TaskService {
         
         Task task = new Task();
         task.setTitle(request.getTitle());
-        task.setDescription(request.getDescription());
+        task.setDescription(blankToNull(request.getDescription()));
         task.setProjectId(request.getProjectId());
         task.setAssignedTo(request.getAssignedTo());
         task.setCreatedBy(request.getCreatedBy());
-        task.setDueDate(request.getDueDate());
+        task.setDueDate(parseDueDate(request.getDueDate()));
         task.setPriority(request.getPriority() != null ? request.getPriority() : 0);
         task.setOrderIndex(request.getOrderIndex() != null ? request.getOrderIndex() : 0);
         task.setStatus(TaskStatus.TO_DO);
@@ -137,6 +139,21 @@ public class TaskService {
         return new TaskStatistics(total, toDo, inProgress, done);
     }
     
+    private static String blankToNull(String s) {
+        return s != null && !s.trim().isEmpty() ? s.trim() : null;
+    }
+
+    private static LocalDateTime parseDueDate(String value) {
+        if (value == null || value.trim().isEmpty()) return null;
+        String v = value.trim().replace("Z", "").replace("z", "");
+        if (v.length() > 19) v = v.substring(0, 19);
+        try {
+            return LocalDateTime.parse(v);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
+    }
+
     /**
      * Convert Task entity to DTO
      */

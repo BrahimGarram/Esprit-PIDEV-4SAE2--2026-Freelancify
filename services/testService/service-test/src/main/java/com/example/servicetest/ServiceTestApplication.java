@@ -2,13 +2,12 @@ package com.example.servicetest;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @SpringBootApplication
+@EnableFeignClients
 public class ServiceTestApplication {
 
     public static void main(String[] args) {

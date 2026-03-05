@@ -114,4 +114,3 @@ public class AffectationTest {
         this.answersJson = answersJson;
     }
 }
-

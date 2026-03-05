@@ -5,13 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDateTime;                     
 
 /**
- * Task entity - represents a task within a project
+ * Task entity - represents a task within a project.
+ * Table: "kanbanlist" (Hibernate creates it if missing). If your DB has "tasks" instead, change to name = "tasks".
  */
 @Entity
-@Table(name = "tasks")
+@Table(name = "kanbanlist")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

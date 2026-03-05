@@ -1,18 +1,24 @@
 package com.freelance.projectservice.controller;
 
 import com.freelance.projectservice.dto.CreateProjectRequest;
+import com.freelance.projectservice.dto.DraftFromTextRequest;
 import com.freelance.projectservice.dto.ProjectDTO;
+import com.freelance.projectservice.dto.ProjectDraftDTO;
+import com.freelance.projectservice.dto.ProjectStatsDTO;
 import com.freelance.projectservice.dto.UpdateProjectRequest;
 import com.freelance.projectservice.model.ProjectStatus;
+import com.freelance.projectservice.service.ProjectAiService;
 import com.freelance.projectservice.service.ProjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Project REST Controller
@@ -26,9 +32,34 @@ import java.util.List;
 @Slf4j
 @CrossOrigin(origins = "http://localhost:4200")
 public class ProjectController {
-    
+
     private final ProjectService projectService;
-    
+    private final ProjectAiService projectAiService;
+
+    @Value("${app.tokens-per-project:5}")
+    private int tokensPerProject;
+    @Value("${app.tokens-per-proposal:2}")
+    private int tokensPerProposal;
+
+    /**
+     * GET /api/projects/config/token-costs
+     * Returns token costs for project creation and proposal submission (for frontend display).
+     */
+    @GetMapping("/config/token-costs")
+    public ResponseEntity<Map<String, Integer>> getTokenCosts() {
+        return ResponseEntity.ok(Map.of("tokensPerProject", tokensPerProject, "tokensPerProposal", tokensPerProposal));
+    }
+
+    /**
+     * POST /api/projects/ai/draft-from-text
+     * Generate a project draft from natural language (Ollama).
+     */
+    @PostMapping("/ai/draft-from-text")
+    public ResponseEntity<ProjectDraftDTO> draftFromText(@Valid @RequestBody DraftFromTextRequest request) {
+        ProjectDraftDTO draft = projectAiService.draftFromText(request.getUserMessage());
+        return ResponseEntity.ok(draft);
+    }
+
     /**
      * POST /api/projects
      * Create a new project
@@ -39,6 +70,16 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.CREATED).body(project);
     }
     
+    /**
+     * GET /api/projects/stats
+     * Get project statistics for backoffice (admin dashboard).
+     */
+    @GetMapping("/stats")
+    public ResponseEntity<ProjectStatsDTO> getProjectStats() {
+        ProjectStatsDTO stats = projectService.getStatistics();
+        return ResponseEntity.ok(stats);
+    }
+
     /**
      * GET /api/projects/{id}
      * Get project by ID

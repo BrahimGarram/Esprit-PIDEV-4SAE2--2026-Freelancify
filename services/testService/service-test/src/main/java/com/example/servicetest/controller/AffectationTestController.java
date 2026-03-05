@@ -6,6 +6,7 @@ import com.example.servicetest.service.AffectationTestService;
 import com.example.servicetest.service.AiTestFeedbackService;
 import com.example.servicetest.api.SubmitTestRequest;
 import com.example.servicetest.api.AffectationWithQuestionsDto;
+import com.example.servicetest.api.AffectationWithFreelancerDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -94,10 +95,10 @@ public class AffectationTestController {
         );
     }
 
-    /** Liste toutes les affectations (admin dashboard) */
+    /** Liste toutes les affectations (admin dashboard) avec nom du freelancer */
     @GetMapping
-    public ResponseEntity<List<AffectationTest>> getAllAffectations() {
-        return ResponseEntity.ok(affectationTestService.getAllAffectations());
+    public ResponseEntity<List<AffectationWithFreelancerDto>> getAllAffectations() {
+        return ResponseEntity.ok(affectationTestService.getAllAffectationsWithFreelancer());
     }
 
 

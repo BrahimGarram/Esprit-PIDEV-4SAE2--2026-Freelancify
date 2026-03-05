@@ -12,12 +12,17 @@ import com.example.servicetest.api.SubmitTestRequest;
 import com.example.servicetest.api.AnswerDto;
 import com.example.servicetest.api.RunCodeResponse;
 import com.example.servicetest.api.AffectationWithQuestionsDto;
+import com.example.servicetest.api.AffectationWithFreelancerDto;
+import com.example.servicetest.api.UserSummaryDto;
+import com.example.servicetest.client.UserClient;
 import com.example.servicetest.api.QuestionForAffectationDto;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,17 +41,20 @@ public class AffectationTestService {
     private final QuestionTestService questionTestService;
     private final CodeExecutionService codeExecutionService;
     private final EmailService emailService;
+    private final UserClient userClient;
 
     public AffectationTestService(AffectationTestRepository affectationTestRepository,
                                   QuestionTestRepository questionTestRepository,
                                   QuestionTestService questionTestService,
                                   CodeExecutionService codeExecutionService,
-                                  EmailService emailService) {
+                                  EmailService emailService,
+                                  UserClient userClient) {
         this.affectationTestRepository = affectationTestRepository;
         this.questionTestRepository = questionTestRepository;
         this.questionTestService = questionTestService;
         this.codeExecutionService = codeExecutionService;
         this.emailService = emailService;
+        this.userClient = userClient;
     }
 
     // ✅ CREATE
@@ -92,7 +100,12 @@ public class AffectationTestService {
             throw new RuntimeException("Vous avez atteint le maximum de 3 tentatives. Vous ne pouvez plus repasser le test.");
         }
 
-        List<Domain> domains = java.util.Arrays.asList(Domain.JAVA, Domain.ANGULAR);
+        // Domains from freelancer's profile skills (user-service). If none, require to fill profile.
+        List<Domain> domains = getDomainsFromUserSkills(freelancerId);
+        if (domains == null || domains.isEmpty()) {
+            throw new RuntimeException("Please fill your skills in your profile before starting the test.");
+        }
+
         List<QuestionTest> questions = questionTestService.getBalancedQuestionsByDomains(domains, 8);
         if (questions.isEmpty()) {
             throw new RuntimeException("Aucune question disponible pour le test.");
@@ -110,9 +123,83 @@ public class AffectationTestService {
         }
         return affectationTestRepository.save(affectation);
     }
-    // ✅ READ ALL
+
+    /**
+     * Récupère les domaines du test à partir des compétences (skills) du profil utilisateur.
+     * Appelle le user-service via OpenFeign. Seules les skill.name qui correspondent à l'enum Domain sont retenues.
+     * @return liste des domaines (vide si pas de skills ou aucune correspondance)
+     */
+    private List<Domain> getDomainsFromUserSkills(Long freelancerId) {
+        List<Domain> result = new ArrayList<>();
+        try {
+            UserSummaryDto user = userClient.getUserById(freelancerId);
+            if (user == null || user.getSkills() == null || user.getSkills().isEmpty()) {
+                return result;
+            }
+            for (com.example.servicetest.api.SkillSummaryDto skill : user.getSkills()) {
+                if (skill == null || skill.getName() == null || skill.getName().isBlank()) {
+                    continue;
+                }
+                String name = skill.getName().trim().toUpperCase();
+                try {
+                    Domain d = Domain.valueOf(name);
+                    if (!result.contains(d)) {
+                        result.add(d);
+                    }
+                } catch (IllegalArgumentException ignored) {
+                    // skill name does not match Domain enum, skip
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Could not load user skills for freelancer {}: {}", freelancerId, e.getMessage());
+        }
+        return result;
+    }
+
+    // ✅ READ ALL (raw entities, internal use)
     public List<AffectationTest> getAllAffectations() {
         return affectationTestRepository.findAll();
+    }
+
+    /**
+     * Liste toutes les affectations enrichies avec le nom du freelancer
+     * (appel OpenFeign au user-service pour chaque freelancerId).
+     */
+    public List<AffectationWithFreelancerDto> getAllAffectationsWithFreelancer() {
+        List<AffectationTest> entities = affectationTestRepository.findAll();
+        return entities.stream()
+                .map(this::toAffectationWithFreelancerDto)
+                .collect(Collectors.toList());
+    }
+
+    private AffectationWithFreelancerDto toAffectationWithFreelancerDto(AffectationTest a) {
+        AffectationWithFreelancerDto dto = new AffectationWithFreelancerDto();
+        dto.setId(a.getId());
+        dto.setFreelancerId(a.getFreelancerId());
+        dto.setAssignedAt(a.getAssignedAt());
+        dto.setTestDate(a.getTestDate());
+        dto.setScore(a.getScore());
+        dto.setIsValidated(a.getIsValidated());
+        dto.setCorrectAnswersCount(a.getCorrectAnswersCount());
+        dto.setTotalQuestions(a.getTotalQuestions());
+        dto.setTimeSpent(a.getTimeSpent());
+        dto.setStatus(a.getStatus() != null ? a.getStatus().name() : null);
+        dto.setDomainScoresJson(a.getDomainScoresJson());
+
+        Long freelancerId = a.getFreelancerId();
+        if (freelancerId != null) {
+            try {
+                UserSummaryDto user = userClient.getUserById(freelancerId);
+                if (user != null && user.getUsername() != null) {
+                    // Pour l'affichage, on place le username dans freelancerFirstName
+                    dto.setFreelancerFirstName(user.getUsername());
+                    dto.setFreelancerLastName("");
+                }
+            } catch (Exception e) {
+                log.warn("Unable to fetch freelancer {} from user-service: {}", freelancerId, e.getMessage());
+            }
+        }
+        return dto;
     }
 
     // ✅ READ BY ID

@@ -1,18 +1,24 @@
 package com.freelance.projectservice.service;
 
+import com.freelance.projectservice.client.WalletClient;
 import com.freelance.projectservice.dto.CreateProjectRequest;
 import com.freelance.projectservice.dto.ProjectDTO;
+import com.freelance.projectservice.dto.ProjectStatsDTO;
 import com.freelance.projectservice.dto.UpdateProjectRequest;
+import com.freelance.projectservice.exception.InsufficientTokensException;
 import com.freelance.projectservice.exception.ResourceNotFoundException;
 import com.freelance.projectservice.model.Project;
 import com.freelance.projectservice.model.ProjectStatus;
 import com.freelance.projectservice.repository.ProjectRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -21,17 +27,34 @@ import java.util.stream.Collectors;
  * Contains business logic for project operations.
  */
 @Service
-@RequiredArgsConstructor
 @Transactional
 @Slf4j
 public class ProjectService {
-    
+
     private final ProjectRepository projectRepository;
+    private final WalletClient walletClient;
+
+    @Value("${app.tokens-per-project:5}")
+    private int tokensPerProject;
+
+    public ProjectService(ProjectRepository projectRepository, WalletClient walletClient) {
+        this.projectRepository = projectRepository;
+        this.walletClient = walletClient;
+    }
     
     /**
-     * Create a new project
+     * Create a new project. Deducts tokens from owner wallet if app.tokens-per-project > 0.
      */
     public ProjectDTO createProject(CreateProjectRequest request) {
+        if (tokensPerProject > 0 && request.getOwnerId() != null) {
+            boolean deducted = walletClient.deductTokens(request.getOwnerId(), tokensPerProject, "Project creation");
+            if (!deducted) {
+                throw new InsufficientTokensException(
+                    "Insufficient token balance. Creating a project costs " + tokensPerProject + " tokens. Please buy tokens first.",
+                    tokensPerProject
+                );
+            }
+        }
         Project project = new Project();
         project.setTitle(request.getTitle());
         project.setDescription(request.getDescription());
@@ -151,6 +174,39 @@ public class ProjectService {
         }
         projectRepository.deleteById(id);
         log.info("Project deleted - ID: {}", id);
+    }
+    
+    /**
+     * Get project statistics for backoffice dashboard.
+     */
+    @Transactional(readOnly = true)
+    public ProjectStatsDTO getStatistics() {
+        long total = projectRepository.count();
+        Map<String, Long> byStatus = new HashMap<>();
+        for (ProjectStatus status : ProjectStatus.values()) {
+            byStatus.put(status.name(), projectRepository.countByStatus(status));
+        }
+        Map<String, Long> byCategory = new HashMap<>();
+        List<Object[]> categoryRows = projectRepository.countByCategory();
+        for (Object[] row : categoryRows) {
+            String category = (String) row[0];
+            Long count = (Long) row[1];
+            byCategory.put(category, count);
+        }
+        BigDecimal totalBudget = projectRepository.sumBudget() != null ? projectRepository.sumBudget() : BigDecimal.ZERO;
+        long completedCount = projectRepository.countByStatus(ProjectStatus.COMPLETED);
+        double completionRate = total > 0 ? (completedCount * 100.0) / total : 0;
+        long withBudget = projectRepository.countByBudgetIsNotNull();
+        double averageBudget = withBudget > 0 ? totalBudget.doubleValue() / withBudget : 0;
+        
+        return ProjectStatsDTO.builder()
+            .total(total)
+            .byStatus(byStatus)
+            .byCategory(byCategory)
+            .totalBudget(totalBudget)
+            .averageBudget(averageBudget)
+            .completionRate(completionRate)
+            .build();
     }
     
     /**

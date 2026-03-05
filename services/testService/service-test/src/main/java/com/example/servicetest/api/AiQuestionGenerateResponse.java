@@ -45,4 +45,3 @@ public class AiQuestionGenerateResponse {
         this.questions = questions;
     }
 }
-

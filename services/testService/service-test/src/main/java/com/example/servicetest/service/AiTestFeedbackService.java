@@ -57,8 +57,6 @@ public class AiTestFeedbackService {
 
     /**
      * Génère un feedback textuel en français sur un test terminé, en utilisant Gemini.
-     * L'IA a accès à tout le test : questions, réponses du candidat et bonnes réponses, pour pouvoir
-     * expliquer "pourquoi la solution est X et pas Y" et répondre aux questions du candidat.
      */
     public String generateFeedbackForAffectation(AffectationTest affectation, String userMessage) {
         if (affectation == null) {
@@ -137,17 +135,15 @@ public class AiTestFeedbackService {
                 .append("--- FIN DU DÉTAIL DU TEST ---\n\n");
 
         if (userMessage == null || userMessage.isBlank()) {
-            userContext.append("Génère un rapport TRÈS COURT, LISIBLE et bien structuré en français. L'utilisateur doit pouvoir le lire rapidement. Règles strictes :\n")
+            userContext.append("Génère un rapport TRÈS COURT, LISIBLE et bien structuré en français. Règles strictes :\n")
                     .append("- Utilise exactement les 3 titres suivants (avec ###) :\n")
                     .append("### 1) Points forts\n")
                     .append("### 2) Points à améliorer\n")
                     .append("### 3) Recommandations\n\n")
-                    .append("- Dans chaque section : uniquement des puces courtes (1 ligne par puce, pas de phrase longue). Maximum 3 à 4 puces par section.\n")
-                    .append("- Aucun paragraphe long. Aucune phrase d'introduction ou de conclusion avant/après les sections.\n")
-                    .append("- Sois factuel et concis : domaines, numéros de questions si utile, sans répéter l'énoncé. Privilégie la clarté et la lisibilité.\n");
+                    .append("- Dans chaque section : uniquement des puces courtes. Maximum 3 à 4 puces par section.\n");
         } else {
             userContext.append("Question du candidat :\n").append(userMessage.trim()).append("\n\n")
-                    .append("Réponds de façon COURTE et concrète en t'appuyant sur ce test. Si le candidat demande comment améliorer ses connaissances, quoi réviser, comment étudier ou progresser : donne des conseils ciblés selon ses points faibles et les domaines du test (ex. ressources, sujets à travailler). Si la question sort du cadre de ce test, réponds uniquement : \"Je ne réponds qu'à propos de ce test. Pose-moi une question sur tes résultats ou comment progresser.\"\n");
+                    .append("Réponds de façon COURTE et concrète en t'appuyant sur ce test.\n");
         }
 
         Map<String, Object> requestBody = new HashMap<>();
@@ -193,9 +189,7 @@ public class AiTestFeedbackService {
         }
     }
 
-    /** Variante sans message utilisateur (rapport simple). */
     public String generateFeedbackForAffectation(AffectationTest affectation) {
         return generateFeedbackForAffectation(affectation, null);
     }
 }
-

@@ -1,15 +1,13 @@
 package com.freelance.projectservice.dto;
 
-import com.freelance.projectservice.model.TaskStatus;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 /**
- * Request DTO for creating a task
+ * Request DTO for creating a task.
+ * dueDate is String so we accept frontend datetime-local value (e.g. "2024-01-15T10:00") or empty without Jackson errors.
  */
 @Data
 @NoArgsConstructor
@@ -33,7 +31,8 @@ public class CreateTaskRequest {
     @Positive(message = "Created by user ID must be positive")
     private Long createdBy;
     
-    private LocalDateTime dueDate;
+    /** ISO-8601 date-time string from frontend (datetime-local) or null/empty */
+    private String dueDate;
     
     @Min(value = 0, message = "Priority must be 0 (Low), 1 (Medium), or 2 (High)")
     @Max(value = 2, message = "Priority must be 0 (Low), 1 (Medium), or 2 (High)")

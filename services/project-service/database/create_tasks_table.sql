@@ -1,7 +1,7 @@
--- Create tasks table for project-service
+-- Kanban list table for project-service (formerly "tasks")
 -- Run this script in your MySQL database
 
-CREATE TABLE IF NOT EXISTS tasks (
+CREATE TABLE IF NOT EXISTS kanbanlist (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
     description TEXT,
