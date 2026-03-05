@@ -152,7 +152,7 @@ A **Freelance Management Platform** built with a **microservices architecture**,
 |--|--|
 | **Institution** | Esprit School of Engineering - Tunisia |
 | **Academic year** | 2025-2026 |
-| **Context** | Final year / integration project (PIDEV 4SAE2) |
+| **Context** | 2nd year Software Engineering cycle (4SAE2) |
 | **Objectives** | Microservices (Spring Boot, Eureka, API Gateway), modern frontend (Angular), security (Keycloak/OAuth2/JWT), and integration of payments, complaints, and technical tests. |
 
 ---
