@@ -197,6 +197,8 @@ A **Freelance Management Platform** built with a **microservices architecture**,
 | **Sahem Omrane** | 📋 Projects — CRUD, proposals, tasks, statistics |
 | **Adam Abidi** | 🤝 Collaboration — workspace, sprints, milestones, teams |
 | **Safwen Souissi** | 📝 Complaints & subscriptions — plans, workflow, analytics |
+| **Amira Ghobber** | 📝 Payment and Facturation |
+
 
 ---
 
